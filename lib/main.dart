@@ -75,11 +75,46 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class JournalPage extends StatelessWidget {
+class JournalPage extends StatefulWidget {
+  @override
+  _JournalPageState createState() => _JournalPageState();
+}
+
+class _JournalPageState extends State<JournalPage> {
+  List<JournalEntry> journalEntries = [];
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Journal Page'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Journal'),
+      ),
+      body: ListView.builder(
+        itemCount: journalEntries.length,
+        itemBuilder: (context, index) {
+          final entry = journalEntries[index];
+          return ListTile(
+            title: Text(entry.date),
+            subtitle: Text(entry.symptoms),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final newEntry = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddJournalEntryPage()),
+          );
+
+          if (newEntry != null) {
+            setState(() {
+              journalEntries.add(newEntry);
+            });
+          }
+        },
+        tooltip: 'Add Journal Entry',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -89,6 +124,72 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text('Profile Page'),
+    );
+  }
+}
+
+class JournalEntry {
+  final String date;
+  final String symptoms;
+
+  JournalEntry({required this.date, required this.symptoms});
+}
+
+class AddJournalEntryPage extends StatefulWidget {
+  @override
+  _AddJournalEntryPageState createState() => _AddJournalEntryPageState();
+}
+
+class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
+  late TextEditingController _symptomsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _symptomsController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _symptomsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Journal Entry'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _symptomsController,
+              decoration: InputDecoration(labelText: 'Symptoms'),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                final date = DateTime.now().toString();
+                final symptoms = _symptomsController.text;
+
+                if (symptoms.isNotEmpty) {
+                  Navigator.pop(
+                    context,
+                    JournalEntry(date: date, symptoms: symptoms),
+                  );
+                } else {
+                  // Handle case where symptoms are empty
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
