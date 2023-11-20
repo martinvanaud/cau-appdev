@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -84,6 +87,48 @@ class _JournalPageState extends State<JournalPage> {
   List<JournalEntry> journalEntries = [];
 
   @override
+  void initState() {
+    super.initState();
+    _loadJournalEntries();
+  }
+
+  Future<void> _loadJournalEntries() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/journal_entries.txt');
+
+      if (file.existsSync()) {
+        final contents = await file.readAsString();
+        final List<dynamic> jsonList = jsonDecode(contents);
+
+        print('Journal Entries File Path: ${file.path}');
+
+        setState(() {
+          journalEntries = jsonList
+              .map((entry) => JournalEntry.fromJson(entry))
+              .toList();
+        });
+      }
+    } catch (e) {
+      print('Error loading journal entries: $e');
+    }
+  }
+
+  Future<void> _saveJournalEntries() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/journal_entries.txt');
+
+      final jsonList = journalEntries.map((entry) => entry.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+
+      await file.writeAsString(jsonString);
+    } catch (e) {
+      print('Error saving journal entries: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -109,6 +154,7 @@ class _JournalPageState extends State<JournalPage> {
           if (newEntry != null) {
             setState(() {
               journalEntries.add(newEntry);
+              _saveJournalEntries(); // Save entries when a new one is added
             });
           }
         },
@@ -133,6 +179,20 @@ class JournalEntry {
   final String symptoms;
 
   JournalEntry({required this.date, required this.symptoms});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'symptoms': symptoms,
+    };
+  }
+
+  factory JournalEntry.fromJson(Map<String, dynamic> json) {
+    return JournalEntry(
+      date: json['date'],
+      symptoms: json['symptoms'],
+    );
+  }
 }
 
 class AddJournalEntryPage extends StatefulWidget {
