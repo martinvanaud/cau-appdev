@@ -139,13 +139,20 @@ class _JournalPageState extends State<JournalPage> {
           return ListTile(
             title: Text(entry.date),
             subtitle: Text(entry.symptoms),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final removeEntry = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => JournalDetailPage(entry: entry),
                 ),
               );
+
+              if (removeEntry == true) {
+                setState(() {
+                  journalEntries.remove(entry);
+                  _saveJournalEntries(); // Save entries after removal
+                });
+              }
             },
           );
         },
@@ -282,9 +289,22 @@ class JournalDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 8.0),
             Text(entry.symptoms),
+            const SizedBox(height: 16.0),
+            TextButton(
+              onPressed: () {
+                _removeEntry(context);
+              },
+              child: Text('Remove Entry', style: TextStyle(color: Colors.red)),
+            ),
           ],
         ),
       ),
     );
   }
+
+  void _removeEntry(BuildContext context) {
+    Navigator.pop(context, true); // Return true to indicate removal
+  }
 }
+
+
