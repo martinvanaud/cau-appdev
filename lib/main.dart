@@ -101,8 +101,6 @@ class _JournalPageState extends State<JournalPage> {
         final contents = await file.readAsString();
         final List<dynamic> jsonList = jsonDecode(contents);
 
-        print('Journal Entries File Path: ${file.path}');
-
         setState(() {
           journalEntries = jsonList
               .map((entry) => JournalEntry.fromJson(entry))
@@ -141,6 +139,14 @@ class _JournalPageState extends State<JournalPage> {
           return ListTile(
             title: Text(entry.date),
             subtitle: Text(entry.symptoms),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => JournalDetailPage(entry: entry),
+                ),
+              );
+            },
           );
         },
       ),
@@ -233,7 +239,7 @@ class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                final date = DateTime.now().toString();
+                final date = DateTime.now().toString().substring(0, 16);
                 final symptoms = _symptomsController.text;
 
                 if (symptoms.isNotEmpty) {
@@ -247,6 +253,35 @@ class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
               },
               child: Text('Save'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class JournalDetailPage extends StatelessWidget {
+  final JournalEntry entry;
+
+  JournalDetailPage({required this.entry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(entry.date),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Symptoms:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            Text(entry.symptoms),
           ],
         ),
       ),
