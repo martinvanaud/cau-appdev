@@ -159,16 +159,37 @@ class _JournalPageState extends State<JournalPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final newEntry = await Navigator.push(
+          final symptoms = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MultiStepJournalEntryPage()),
+            MaterialPageRoute(builder: (context) => SymptomsEntryPage()),
           );
 
-          if (newEntry != null) {
-            setState(() {
-              journalEntries.add(newEntry);
-              _saveJournalEntries(); // Save entries when a new one is added
-            });
+          if (symptoms != null) {
+            final mood = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MoodEntryPage()),
+            );
+
+            if (mood != null) {
+              final feelings = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FeelingsEntryPage()),
+              );
+
+              if (feelings != null) {
+                final newEntry = JournalEntry(
+                  date: DateTime.now().toString().substring(0, 16),
+                  symptoms: symptoms,
+                  feelings: feelings,
+                  mood: mood, // Add mood to the new entry
+                );
+
+                setState(() {
+                  journalEntries.add(newEntry);
+                  _saveJournalEntries(); // Save entries when a new one is added
+                });
+              }
+            }
           }
         },
         tooltip: 'Add Journal Entry',
@@ -178,11 +199,164 @@ class _JournalPageState extends State<JournalPage> {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+class SymptomsEntryPage extends StatefulWidget {
+  @override
+  _SymptomsEntryPageState createState() => _SymptomsEntryPageState();
+}
+
+class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
+  late TextEditingController _symptomsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _symptomsController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _symptomsController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile Page'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Symptoms Entry'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _symptomsController,
+              decoration: InputDecoration(labelText: 'Enter Symptoms'),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                final symptoms = _symptomsController.text;
+                if (symptoms.isNotEmpty) {
+                  Navigator.pop(context, symptoms); // Return symptoms to the previous page
+                } else {
+                  // Handle case where symptoms are empty
+                }
+              },
+              child: Text('Next'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MoodEntryPage extends StatefulWidget {
+  @override
+  _MoodEntryPageState createState() => _MoodEntryPageState();
+}
+
+class _MoodEntryPageState extends State<MoodEntryPage> {
+  late TextEditingController _moodController;
+
+  @override
+  void initState() {
+    super.initState();
+    _moodController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _moodController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Mood Entry'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _moodController,
+              decoration: InputDecoration(labelText: 'Describe Mood'),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                final mood = _moodController.text;
+                if (mood.isNotEmpty) {
+                  Navigator.pop(context, mood);
+                } else {
+                  // Handle case where mood is empty
+                }
+              },
+              child: Text('Next'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FeelingsEntryPage extends StatefulWidget {
+  @override
+  _FeelingsEntryPageState createState() => _FeelingsEntryPageState();
+}
+
+class _FeelingsEntryPageState extends State<FeelingsEntryPage> {
+  late TextEditingController _feelingsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _feelingsController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _feelingsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Feelings Entry'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _feelingsController,
+              decoration: InputDecoration(labelText: 'Enter Feelings'),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                final feelings = _feelingsController.text;
+                if (feelings.isNotEmpty) {
+                  Navigator.pop(context, feelings); // Return feelings to the previous page
+                } else {
+                  // Handle case where feelings are empty
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -191,14 +365,21 @@ class JournalEntry {
   final String date;
   final String symptoms;
   final String feelings;
+  final String mood; // Add this line
 
-  JournalEntry({required this.date, required this.symptoms, required this.feelings});
+  JournalEntry({
+    required this.date,
+    required this.symptoms,
+    required this.feelings,
+    required this.mood, // Add this line
+  });
 
   Map<String, dynamic> toJson() {
     return {
       'date': date,
       'symptoms': symptoms,
       'feelings': feelings,
+      'mood': mood, // Add this line
     };
   }
 
@@ -207,109 +388,7 @@ class JournalEntry {
       date: json['date'],
       symptoms: json['symptoms'],
       feelings: json['feelings'],
-    );
-  }
-}
-
-class MultiStepJournalEntryPage extends StatefulWidget {
-  @override
-  _MultiStepJournalEntryPageState createState() => _MultiStepJournalEntryPageState();
-}
-
-class _MultiStepJournalEntryPageState extends State<MultiStepJournalEntryPage> {
-  late TextEditingController _symptomsController;
-  late TextEditingController _feelingsController;
-
-  int _currentStep = 0;
-  static const int _totalSteps = 2;
-
-  @override
-  void initState() {
-    super.initState();
-    _symptomsController = TextEditingController();
-    _feelingsController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _symptomsController.dispose();
-    _feelingsController.dispose();
-    super.dispose();
-  }
-
-  void _nextStep() {
-    if (_currentStep < _totalSteps - 1) {
-      setState(() {
-        _currentStep++;
-      });
-    }
-  }
-
-  void _saveEntry() {
-    final date = DateTime.now().toString().substring(0, 16);
-    final symptoms = _symptomsController.text;
-    final feelings = _feelingsController.text;
-
-    if (symptoms.isNotEmpty) {
-      Navigator.pop(
-        context,
-        JournalEntry(date: date, symptoms: symptoms, feelings: feelings),
-      );
-    } else {
-      // Handle case where symptoms are empty
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Journal Entry'),
-      ),
-      body: Stepper(
-        type: StepperType.horizontal,
-        currentStep: _currentStep,
-        onStepContinue: _nextStep,
-        onStepTapped: (step) => _nextStep(),
-        onStepCancel: () => Navigator.pop(context),
-        steps: [
-          Step(
-            title: Text('Symptoms'),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Step ${_currentStep + 1} of $_totalSteps'),
-                TextField(
-                  controller: _symptomsController,
-                  decoration: InputDecoration(labelText: 'Enter Symptoms'),
-                ),
-              ],
-            ),
-            isActive: _currentStep == 0,
-          ),
-          Step(
-            title: Text('Feelings'),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Step ${_currentStep + 1} of $_totalSteps'),
-                TextField(
-                  controller: _feelingsController,
-                  decoration: InputDecoration(labelText: 'Enter Feelings'),
-                ),
-              ],
-            ),
-            isActive: _currentStep == 1,
-          ),
-        ],
-      ),
-      floatingActionButton: _currentStep == _totalSteps - 1
-          ? FloatingActionButton(
-        onPressed: _saveEntry,
-        tooltip: 'Save',
-        child: Icon(Icons.save),
-      )
-          : null,
+      mood: json['mood'], // Add this line
     );
   }
 }
@@ -338,6 +417,13 @@ class JournalDetailPage extends StatelessWidget {
             Text(entry.symptoms, style: TextStyle(fontSize: 18)),
             const SizedBox(height: 18.0),
             const Text(
+              'Mood:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            const SizedBox(height: 4.0),
+            Text(entry.mood, style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 18.0),
+            const Text(
               'Feelings:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
@@ -360,4 +446,12 @@ class JournalDetailPage extends StatelessWidget {
   }
 }
 
+class ProfilePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Profile Page'),
+    );
+  }
+}
 
