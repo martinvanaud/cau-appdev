@@ -136,9 +136,39 @@ class _JournalPageState extends State<JournalPage> {
         itemCount: journalEntries.length,
         itemBuilder: (context, index) {
           final entry = journalEntries[index];
+          Color lineColor;
+
+          // Set line color based on mood
+          switch (entry.mood.toLowerCase()) {
+            case 'good':
+              lineColor = Colors.green;
+              break;
+            case 'okay':
+              lineColor = Colors.lightGreen;
+              break;
+            case 'neutral':
+              lineColor = Colors.yellow; // or any other color for neutral
+              break;
+            case 'bad':
+              lineColor = Colors.orange;
+              break;
+            case 'terrible':
+              lineColor = Colors.red;
+              break;
+            default:
+              lineColor = Colors.white;
+          }
+
           return ListTile(
             title: Text(entry.date, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
+            tileColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+            leading: Container(
+              width: 8.0,
+              color: lineColor,
+            ),
+
             onTap: () async {
               final removeEntry = await Navigator.push(
                 context,
