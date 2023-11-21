@@ -161,7 +161,7 @@ class _JournalPageState extends State<JournalPage> {
         onPressed: () async {
           final newEntry = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddJournalEntryPage()),
+            MaterialPageRoute(builder: (context) => MultiStepJournalEntryPage()),
           );
 
           if (newEntry != null) {
@@ -211,27 +211,53 @@ class JournalEntry {
   }
 }
 
-class AddJournalEntryPage extends StatefulWidget {
+class MultiStepJournalEntryPage extends StatefulWidget {
   @override
-  _AddJournalEntryPageState createState() => _AddJournalEntryPageState();
+  _MultiStepJournalEntryPageState createState() => _MultiStepJournalEntryPageState();
 }
 
-class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
+class _MultiStepJournalEntryPageState extends State<MultiStepJournalEntryPage> {
   late TextEditingController _symptomsController;
-  late TextEditingController _symptomsController2;
+  late TextEditingController _feelingsController;
+
+  int _currentStep = 0;
+  static const int _totalSteps = 2;
 
   @override
   void initState() {
     super.initState();
     _symptomsController = TextEditingController();
-    _symptomsController2 = TextEditingController();
+    _feelingsController = TextEditingController();
   }
 
   @override
   void dispose() {
     _symptomsController.dispose();
-    _symptomsController2.dispose();
+    _feelingsController.dispose();
     super.dispose();
+  }
+
+  void _nextStep() {
+    if (_currentStep < _totalSteps - 1) {
+      setState(() {
+        _currentStep++;
+      });
+    }
+  }
+
+  void _saveEntry() {
+    final date = DateTime.now().toString().substring(0, 16);
+    final symptoms = _symptomsController.text;
+    final feelings = _feelingsController.text;
+
+    if (symptoms.isNotEmpty) {
+      Navigator.pop(
+        context,
+        JournalEntry(date: date, symptoms: symptoms, feelings: feelings),
+      );
+    } else {
+      // Handle case where symptoms are empty
+    }
   }
 
   @override
@@ -240,41 +266,50 @@ class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
       appBar: AppBar(
         title: Text('Add Journal Entry'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _symptomsController,
-              decoration: InputDecoration(labelText: 'Symptoms and Adverse reactions'),
+      body: Stepper(
+        type: StepperType.horizontal,
+        currentStep: _currentStep,
+        onStepContinue: _nextStep,
+        onStepTapped: (step) => _nextStep(),
+        onStepCancel: () => Navigator.pop(context),
+        steps: [
+          Step(
+            title: Text('Symptoms'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Step ${_currentStep + 1} of $_totalSteps'),
+                TextField(
+                  controller: _symptomsController,
+                  decoration: InputDecoration(labelText: 'Enter Symptoms'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _symptomsController2,
-              decoration: InputDecoration(labelText: 'Feelings'),
+            isActive: _currentStep == 0,
+          ),
+          Step(
+            title: Text('Feelings'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Step ${_currentStep + 1} of $_totalSteps'),
+                TextField(
+                  controller: _feelingsController,
+                  decoration: InputDecoration(labelText: 'Enter Feelings'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                final date = DateTime.now().toString().substring(0, 16);
-                final symptoms = _symptomsController.text;
-                final feelings = _symptomsController2.text;
-
-                if (symptoms.isNotEmpty) {
-                  Navigator.pop(
-                    context,
-                    JournalEntry(date: date, symptoms: symptoms, feelings: feelings),
-                  );
-                } else {
-                  // Handle case where symptoms are empty
-                }
-              },
-              child: Text('Save'),
-            ),
-          ],
-        ),
+            isActive: _currentStep == 1,
+          ),
+        ],
       ),
+      floatingActionButton: _currentStep == _totalSteps - 1
+          ? FloatingActionButton(
+        onPressed: _saveEntry,
+        tooltip: 'Save',
+        child: Icon(Icons.save),
+      )
+          : null,
     );
   }
 }
