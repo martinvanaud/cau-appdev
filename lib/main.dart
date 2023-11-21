@@ -130,15 +130,15 @@ class _JournalPageState extends State<JournalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Journal'),
+        title: Text('Health Journal'),
       ),
       body: ListView.builder(
         itemCount: journalEntries.length,
         itemBuilder: (context, index) {
           final entry = journalEntries[index];
           return ListTile(
-            title: Text(entry.date),
-            subtitle: Text(entry.symptoms),
+            title: Text(entry.date, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
             onTap: () async {
               final removeEntry = await Navigator.push(
                 context,
@@ -190,13 +190,15 @@ class ProfilePage extends StatelessWidget {
 class JournalEntry {
   final String date;
   final String symptoms;
+  final String feelings;
 
-  JournalEntry({required this.date, required this.symptoms});
+  JournalEntry({required this.date, required this.symptoms, required this.feelings});
 
   Map<String, dynamic> toJson() {
     return {
       'date': date,
       'symptoms': symptoms,
+      'feelings': feelings,
     };
   }
 
@@ -204,6 +206,7 @@ class JournalEntry {
     return JournalEntry(
       date: json['date'],
       symptoms: json['symptoms'],
+      feelings: json['feelings'],
     );
   }
 }
@@ -215,16 +218,19 @@ class AddJournalEntryPage extends StatefulWidget {
 
 class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
   late TextEditingController _symptomsController;
+  late TextEditingController _symptomsController2;
 
   @override
   void initState() {
     super.initState();
     _symptomsController = TextEditingController();
+    _symptomsController2 = TextEditingController();
   }
 
   @override
   void dispose() {
     _symptomsController.dispose();
+    _symptomsController2.dispose();
     super.dispose();
   }
 
@@ -241,18 +247,24 @@ class _AddJournalEntryPageState extends State<AddJournalEntryPage> {
           children: [
             TextField(
               controller: _symptomsController,
-              decoration: InputDecoration(labelText: 'Symptoms'),
+              decoration: InputDecoration(labelText: 'Symptoms and Adverse reactions'),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: _symptomsController2,
+              decoration: InputDecoration(labelText: 'Feelings'),
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
                 final date = DateTime.now().toString().substring(0, 16);
                 final symptoms = _symptomsController.text;
+                final feelings = _symptomsController2.text;
 
                 if (symptoms.isNotEmpty) {
                   Navigator.pop(
                     context,
-                    JournalEntry(date: date, symptoms: symptoms),
+                    JournalEntry(date: date, symptoms: symptoms, feelings: feelings),
                   );
                 } else {
                   // Handle case where symptoms are empty
@@ -283,19 +295,25 @@ class JournalDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Symptoms:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            const SizedBox(height: 8.0),
-            Text(entry.symptoms),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 4.0),
+            Text(entry.symptoms, style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 18.0),
+            const Text(
+              'Feelings:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            const SizedBox(height: 4.0),
+            Text(entry.feelings, style: TextStyle(fontSize: 16)),
+            const SizedBox(height: 20.0),
             TextButton(
               onPressed: () {
                 _removeEntry(context);
               },
-              child: Text('Remove Entry', style: TextStyle(color: Colors.red)),
-            ),
+              child: const Text('Remove Entry', style: TextStyle(color: Colors.red, fontSize: 16))),
           ],
         ),
       ),
