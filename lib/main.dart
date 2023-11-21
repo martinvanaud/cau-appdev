@@ -205,53 +205,101 @@ class SymptomsEntryPage extends StatefulWidget {
 }
 
 class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
-  late TextEditingController _symptomsController;
-
-  @override
-  void initState() {
-    super.initState();
-    _symptomsController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _symptomsController.dispose();
-    super.dispose();
-  }
+  List<String> selectedSymptoms = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Symptoms Entry'),
-      ),
+      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _symptomsController,
-              decoration: InputDecoration(labelText: 'Enter Symptoms'),
+            Text('1 of 3', style: TextStyle(fontSize: 16)),
+            Text(
+              'Have you experiened any of these symptoms today?',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                final symptoms = _symptomsController.text;
-                if (symptoms.isNotEmpty) {
-                  Navigator.pop(context, symptoms); // Return symptoms to the previous page
-                } else {
-                  // Handle case where symptoms are empty
-                }
-              },
-              child: Text('Next'),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: buildSymptomButtons(),
             ),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (selectedSymptoms.isNotEmpty) {
+                      final symptoms = selectedSymptoms.join(', '); // Join selected symptoms
+                      Navigator.pop(context, symptoms);
+                    } else {
+                      // Handle case where no symptoms are selected
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    minimumSize: Size(400, 60),
+                    backgroundColor: Colors.blueAccent,
+                  ),
+                  child: Text('Next', style: TextStyle(fontSize: 20, color: Colors.white)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
     );
   }
+
+  List<Widget> buildSymptomButtons() {
+    final List<String> allSymptoms = [
+      'Chills',
+      'Chest pain',
+      'Constipation',
+      'Diarrhea',
+      'Dizziness',
+      'Fatigue',
+      'Fever',
+      'Headache',
+      'Joint pain',
+      'Muscle pain',
+      'Nausea',
+      'Unusual tiredness',
+      'Vomiting',
+      'No symptoms'
+    ];
+
+    return allSymptoms.map((symptom) {
+      final bool isSelected = selectedSymptoms.contains(symptom);
+      return ElevatedButton(
+        onPressed: () {
+          setState(() {
+            if (isSelected) {
+              selectedSymptoms.remove(symptom);
+            } else {
+              selectedSymptoms.add(symptom);
+            }
+          });
+        },
+        style: ElevatedButton.styleFrom(
+          primary: isSelected ? Colors.blue : Colors.white38,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+        child: Text(symptom, style: TextStyle(fontSize: 16, color: Colors.white)),
+      );
+    }).toList();
+  }
 }
+
 
 class MoodEntryPage extends StatefulWidget {
   @override
@@ -259,53 +307,83 @@ class MoodEntryPage extends StatefulWidget {
 }
 
 class _MoodEntryPageState extends State<MoodEntryPage> {
-  late TextEditingController _moodController;
-
-  @override
-  void initState() {
-    super.initState();
-    _moodController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _moodController.dispose();
-    super.dispose();
-  }
+  String? selectedMood; // Variable to store the selected mood
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Mood Entry'),
-      ),
+      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _moodController,
-              decoration: InputDecoration(labelText: 'Describe Mood'),
+            Text('2 of 3', style: TextStyle(fontSize: 16)),
+            Text('What is your overall mood?',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16.0),
+            // Use a Column to display mood options vertically
+            Column(
+              children: [
+                _buildMoodRadioButton('Good'),
+                _buildMoodRadioButton('Okay'),
+                _buildMoodRadioButton('Neutral'),
+                _buildMoodRadioButton('Bad'),
+                _buildMoodRadioButton('Terrible'),
+              ],
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                final mood = _moodController.text;
-                if (mood.isNotEmpty) {
-                  Navigator.pop(context, mood);
-                } else {
-                  // Handle case where mood is empty
-                }
-              },
-              child: Text('Next'),
+            // Draw a line connecting all the circles
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (selectedMood != null) {
+                      Navigator.pop(context, selectedMood);
+                    } else {
+                      // Handle case where mood is not selected
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    minimumSize: Size(400, 60),
+                    backgroundColor: Colors.blueAccent,
+                  ),
+                  child: Text('Next', style: TextStyle(fontSize: 20, color: Colors.white)),
+                ),
+              ),
             ),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildMoodRadioButton(String mood) {
+    return Row(
+      children: [
+        Radio<String>(
+          value: mood,
+          groupValue: selectedMood,
+          onChanged: (value) {
+            setState(() {
+              selectedMood = value;
+            });
+          },
+        ),
+        Text(mood, style: TextStyle(fontSize: 18)),
+        SizedBox(width: 16.0),
+      ],
+    );
+  }
 }
+
+
 
 class FeelingsEntryPage extends StatefulWidget {
   @override
@@ -330,30 +408,44 @@ class _FeelingsEntryPageState extends State<FeelingsEntryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Feelings Entry'),
-      ),
+      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text('3 of 3', style: TextStyle(fontSize: 16)),
+            Text('Describe your current feelings',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
             TextField(
               controller: _feelingsController,
               decoration: InputDecoration(labelText: 'Enter Feelings'),
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                final feelings = _feelingsController.text;
-                if (feelings.isNotEmpty) {
-                  Navigator.pop(context, feelings); // Return feelings to the previous page
-                } else {
-                  // Handle case where feelings are empty
-                }
-              },
-              child: Text('Save'),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final feelings = _feelingsController.text;
+                    if (feelings.isNotEmpty) {
+                      Navigator.pop(context, feelings); // Return feelings to the previous page
+                    } else {
+                      // Handle case where feelings are empty
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    minimumSize: Size(400, 60),
+                    backgroundColor: Colors.blueAccent,
+                  ),
+                  child: Text('Finish', style: TextStyle(fontSize: 20, color: Colors.white)),
+                ),
+              ),
             ),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
@@ -365,13 +457,13 @@ class JournalEntry {
   final String date;
   final String symptoms;
   final String feelings;
-  final String mood; // Add this line
+  final String mood;
 
   JournalEntry({
     required this.date,
     required this.symptoms,
     required this.feelings,
-    required this.mood, // Add this line
+    required this.mood,
   });
 
   Map<String, dynamic> toJson() {
@@ -379,7 +471,7 @@ class JournalEntry {
       'date': date,
       'symptoms': symptoms,
       'feelings': feelings,
-      'mood': mood, // Add this line
+      'mood': mood,
     };
   }
 
@@ -388,7 +480,7 @@ class JournalEntry {
       date: json['date'],
       symptoms: json['symptoms'],
       feelings: json['feelings'],
-      mood: json['mood'], // Add this line
+      mood: json['mood'],
     );
   }
 }
