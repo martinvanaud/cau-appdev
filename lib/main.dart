@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'addmedicationpage.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -12,10 +12,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MediMinder',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MyHomePage(),
+        '/addMedication': (context) => AddMedicationPage(),
+      },
+      // home: const MyHomePage(),
     );
   }
 }
@@ -69,8 +74,18 @@ class _MyHomePageState extends State<MyHomePage> {
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Home Page'),
+    return Scaffold(
+      body: const Center(
+        child: Text('Home Page'),
+      ),
+      floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.pushNamed(context, '/addMedication');
+      },
+      tooltip: 'Add medication',
+      shape: const CircleBorder(),
+      child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -78,7 +93,7 @@ class HomePage extends StatelessWidget {
 class JournalPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Text('Journal Page'),
     );
   }
@@ -87,7 +102,7 @@ class JournalPage extends StatelessWidget {
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Text('Profile Page'),
     );
   }
