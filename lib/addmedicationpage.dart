@@ -1,41 +1,35 @@
 import 'package:flutter/material.dart';
-
-enum MealTime {
-  nevermind,
-  beforeMeals,
-  duringMeals,
-  afterMeals,
-}
+import 'enums/dosage.dart';
 
 class AddMedicationPage extends StatelessWidget {
   AddMedicationPage({super.key});
-  MealTime? _mealTime;
+  DosageTiming? _dosageTime;
   final bool _isComplete = true;
 
   List<Widget> _getMealTimeButtons() {
-    return MealTime.values.map((mealTime) {
+    return DosageTiming.values.map((dosageTime) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
         onPressed: () {
-          _mealTime = mealTime;
+          _dosageTime = dosageTime;
         },
-        child: Text(_getMealTimeText(mealTime), style: const TextStyle(fontSize: 20)),
+        child: Text(_getDosageTimeText(dosageTime), style: const TextStyle(fontSize: 20)),
         ),
       );
     }).toList();
   }
 
-  String _getMealTimeText(MealTime mealTime) {
-    switch (mealTime) {
-      case MealTime.nevermind:
-        return 'Nevermind';
-      case MealTime.beforeMeals:
+  String _getDosageTimeText(DosageTiming dosageTime) {
+    switch (dosageTime) {
+      case DosageTiming.beforeMeal:
         return 'Before Meals';
-      case MealTime.duringMeals:
+      case DosageTiming.duringMeal:
         return 'During Meals';
-      case MealTime.afterMeals:
+      case DosageTiming.afterMeal:
         return 'After Meals';
+      case DosageTiming.whenever:
+        return 'Whenever';
       default:
         return '';
     }

@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+// Provider
+import 'package:provider/provider.dart';
+import 'package:medi_minder/providers/medication.dart';
+
+// Pages
+import 'package:medi_minder/pages/home.dart';
 import 'addmedicationpage.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) {
+        MedicationProvider provider = MedicationProvider();
+        provider.initializeMedications();
+        return provider;
+      },
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
