@@ -6,7 +6,7 @@ class AddMedicationPage extends StatelessWidget {
   DosageTiming? _dosageTime;
   final bool _isComplete = true;
 
-  List<Widget> _getMealTimeButtons() {
+  List<Widget> _getDosageTimeButtons() {
     return DosageTiming.values.map((dosageTime) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -39,7 +39,6 @@ class AddMedicationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title: const Text('Add medication'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.close),
@@ -55,9 +54,16 @@ class AddMedicationPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Add medication'),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('1 of 2', style: TextStyle(fontSize: 16)),
+                Text('Add Medication', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              ],
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -91,7 +97,7 @@ class AddMedicationPage extends StatelessWidget {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: _getMealTimeButtons(),
+              children: _getDosageTimeButtons(),
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width,
