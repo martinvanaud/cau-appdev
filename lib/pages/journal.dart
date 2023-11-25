@@ -34,7 +34,6 @@ class _JournalPageState extends State<JournalPage> {
               .map((entry) => JournalEntry.fromJson(entry))
               .toList();
         });
-
       }
     } catch (e) {
       print('Error loading journal entries: $e');
@@ -59,12 +58,18 @@ class _JournalPageState extends State<JournalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Health Journal'),
+        title: const Text(
+            'Health Journal',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: ListView.builder(
         itemCount: journalEntries.length,
         itemBuilder: (context, index) {
-          final entry = journalEntries[index];
+          final entry = journalEntries.reversed.toList()[index];
           Color lineColor;
 
           // Set line color based on mood
@@ -88,30 +93,48 @@ class _JournalPageState extends State<JournalPage> {
               lineColor = Colors.white;
           }
 
-          return ListTile(
-            title: Text(entry.date, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
-            tileColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-            leading: Container(
-              width: 8.0,
-              color: lineColor,
-            ),
-            onTap: () async {
-              final removeEntry = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => JournalDetailPage(entry: entry),
+          return Container(
+            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 4,
+                  offset: Offset(0, 3),
                 ),
-              );
+              ],
+            ),
+            child: ListTile(
+              title: Text(
+                entry.date,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
+              tileColor: Colors.transparent,
+              contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+              leading: Container(
+                width: 8.0,
+                color: lineColor,
+              ),
+              onTap: () async {
+                final removeEntry = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => JournalDetailPage(entry: entry),
+                  ),
+                );
 
-              if (removeEntry == true) {
-                setState(() {
-                  journalEntries.remove(entry);
-                  _saveJournalEntries(); // Save entries after removal
-                });
-              }
-            },
+                if (removeEntry == true) {
+                  setState(() {
+                    journalEntries.remove(entry);
+                    _saveJournalEntries(); // Save entries after removal
+                  });
+                }
+              },
+            ),
           );
         },
       ),
@@ -156,9 +179,6 @@ class _JournalPageState extends State<JournalPage> {
     );
   }
 }
-
-// Rest of the code remains unchanged
-
 
 class SymptomsEntryPage extends StatefulWidget {
   @override
@@ -380,9 +400,22 @@ class _FeelingsEntryPageState extends State<FeelingsEntryPage> {
             Text('3 of 3', style: TextStyle(fontSize: 16)),
             Text('Describe your current feelings',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-            TextField(
-              controller: _feelingsController,
-              decoration: InputDecoration(labelText: 'Enter Feelings'),
+            const SizedBox(height: 16.0),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                color: Colors.grey[200],
+              ),
+              child: TextField(
+                controller: _feelingsController,
+                decoration: InputDecoration(
+                  labelText: 'Write down notes and feelings from today',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+               // Set the number of lines
+              ),
             ),
             const SizedBox(height: 16.0),
             Expanded(
@@ -404,7 +437,7 @@ class _FeelingsEntryPageState extends State<FeelingsEntryPage> {
                     minimumSize: Size(400, 60),
                     backgroundColor: Colors.blueAccent,
                   ),
-                  child: Text('Finish', style: TextStyle(fontSize: 20, color: Colors.white)),
+                  child: Text('Done', style: TextStyle(fontSize: 20, color: Colors.white)),
                 ),
               ),
             ),
@@ -415,6 +448,7 @@ class _FeelingsEntryPageState extends State<FeelingsEntryPage> {
     );
   }
 }
+
 
 class JournalDetailPage extends StatelessWidget {
   final JournalEntry entry;
