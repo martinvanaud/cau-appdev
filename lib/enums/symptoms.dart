@@ -1,0 +1,16 @@
+enum Symptoms {
+  chills,
+  chestPain,
+  constipation,
+  diarrhea,
+  dizziness,
+  fatigue,
+  fever,
+  headache,
+  jointPain,
+  musclePain,
+  nausea,
+  unusualTiredness,
+  vomiting,
+  noSymptoms,
+}
