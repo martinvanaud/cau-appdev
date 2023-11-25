@@ -3,8 +3,24 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
 
+// Provider
+import 'package:provider/provider.dart';
+import 'package:medi_minder/providers/medication.dart';
+
+// Pages
+import 'package:medi_minder/pages/home.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) {
+        MedicationProvider provider = MedicationProvider();
+        provider.initializeMedications();
+        return provider;
+      },
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -69,18 +85,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Home Page'),
-    );
-  }
-}
-
 class JournalPage extends StatefulWidget {
   @override
-  _JournalPageState createState() => _JournalPageState();
+  State<JournalPage> createState() => _JournalPageState();
 }
 
 class _JournalPageState extends State<JournalPage> {
@@ -248,7 +255,7 @@ class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
           children: [
             Text('1 of 3', style: TextStyle(fontSize: 16)),
             Text(
-              'Have you experiened any of these symptoms today?',
+              'Have you experienced any of these symptoms today?',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),
@@ -267,7 +274,7 @@ class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
                       final symptoms = selectedSymptoms.join(', '); // Join selected symptoms
                       Navigator.pop(context, symptoms);
                     } else {
-                      // Handle case where no symptoms are selected
+                      // Handle the case where no symptoms are selected
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -330,7 +337,6 @@ class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
   }
 }
 
-
 class MoodEntryPage extends StatefulWidget {
   @override
   _MoodEntryPageState createState() => _MoodEntryPageState();
@@ -373,7 +379,7 @@ class _MoodEntryPageState extends State<MoodEntryPage> {
                     if (selectedMood != null) {
                       Navigator.pop(context, selectedMood);
                     } else {
-                      // Handle case where mood is not selected
+                      // Handle the case where mood is not selected
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -412,8 +418,6 @@ class _MoodEntryPageState extends State<MoodEntryPage> {
     );
   }
 }
-
-
 
 class FeelingsEntryPage extends StatefulWidget {
   @override
@@ -461,7 +465,7 @@ class _FeelingsEntryPageState extends State<FeelingsEntryPage> {
                     if (feelings.isNotEmpty) {
                       Navigator.pop(context, feelings); // Return feelings to the previous page
                     } else {
-                      // Handle case where feelings are empty
+                      // Handle the case where feelings are empty
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -553,10 +557,10 @@ class JournalDetailPage extends StatelessWidget {
             Text(entry.feelings, style: TextStyle(fontSize: 16)),
             const SizedBox(height: 20.0),
             TextButton(
-              onPressed: () {
-                _removeEntry(context);
-              },
-              child: const Text('Remove Entry', style: TextStyle(color: Colors.red, fontSize: 16))),
+                onPressed: () {
+                  _removeEntry(context);
+                },
+                child: const Text('Remove Entry', style: TextStyle(color: Colors.red, fontSize: 16))),
           ],
         ),
       ),
@@ -576,4 +580,3 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
-
