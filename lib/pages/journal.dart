@@ -35,6 +35,7 @@ class _JournalPageState extends State<JournalPage> {
               .map((entry) => JournalEntry.fromJson(entry))
               .toList();
         });
+
       }
     } catch (e) {
       print('Error loading journal entries: $e');

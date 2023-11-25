@@ -34,5 +34,19 @@ class JournalEntry {
 }
 
 T enumFromString<T>(List<T> values, String value) {
-  return values.firstWhere((type) => type.toString().split('.').last == value);
+  final formattedValues = value.split(',').map((v) => v.trim().toLowerCase()).toList();
+
+  return values.firstWhere(
+        (type) {
+      final typeName = type.toString().split('.').last.toLowerCase();
+      return formattedValues.any((formattedValue) => typeName == formattedValue);
+    },
+    orElse: () {
+      throw Exception('No matching element found for value: $value');
+    },
+  );
 }
+
+
+
+
