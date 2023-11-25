@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ChangePasswordPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -87,8 +88,81 @@ class JournalPage extends StatelessWidget {
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile Page'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile Page',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+          ),),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: const Column(
+                children: [
+                  SizedBox(height: 30.0),
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: AssetImage(''),
+                  ),
+                  SizedBox(height: 30.0),
+                  Text(
+                    'firebase username',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const ExpansionTile(
+              title: Text('Profile informations',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 30,
+                ),),
+              children: [
+                ListTile(
+                  title: Text('Name: ...'),
+                ),
+                ListTile(
+                  title: Text('Age: ...'),
+                ),
+                ListTile(
+                  title: Text('email: ...'),
+                ),
+              ],
+            ),
+             ExpansionTile(
+              title: const Text('Settings',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 30,
+                ),),
+              children: [
+                ListTile(
+                  title: const Text('change password'),
+                  trailing: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChangePasswordPage(),
+                            ));
+                      }, style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text("Change Password", style: TextStyle(color: Colors.black),)
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
