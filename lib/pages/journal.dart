@@ -5,7 +5,6 @@ import 'dart:convert';
 
 import 'package:medi_minder/entity/journalentry.dart';
 import 'package:medi_minder/enums/mood.dart';
-import 'package:medi_minder/enums/symptoms.dart';
 
 class JournalPage extends StatefulWidget {
   @override
@@ -91,14 +90,13 @@ class _JournalPageState extends State<JournalPage> {
 
           return ListTile(
             title: Text(entry.date, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            subtitle: Text(entry.symptoms.toString().split('.').last, style: TextStyle(fontSize: 16)),
+            subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
             tileColor: Colors.white,
             contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             leading: Container(
               width: 8.0,
               color: lineColor,
             ),
-
             onTap: () async {
               final removeEntry = await Navigator.push(
                 context,
@@ -139,7 +137,7 @@ class _JournalPageState extends State<JournalPage> {
               if (feelings != null) {
                 final newEntry = JournalEntry(
                   date: DateTime.now().toString().substring(0, 16),
-                  symptoms: enumFromString(Symptoms.values, symptoms),
+                  symptoms: symptoms,
                   feelings: feelings,
                   mood: enumFromString(Mood.values, mood),
                 );
@@ -165,6 +163,7 @@ class _JournalPageState extends State<JournalPage> {
 class SymptomsEntryPage extends StatefulWidget {
   @override
   _SymptomsEntryPageState createState() => _SymptomsEntryPageState();
+
 }
 
 class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
@@ -260,6 +259,10 @@ class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
         child: Text(symptom, style: TextStyle(fontSize: 16, color: Colors.white)),
       );
     }).toList();
+  }
+
+  List<String> getSelectedSymptoms() {
+    return selectedSymptoms;
   }
 }
 
@@ -429,32 +432,58 @@ class JournalDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Symptoms:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
             ),
-            const SizedBox(height: 4.0),
-            Text(entry.symptoms.name, style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 18.0),
-            const Text(
+            SizedBox(height: 8.0),
+            Text(
+              entry.symptoms,
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 24.0),
+            Text(
               'Mood:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
             ),
-            const SizedBox(height: 4.0),
-            Text(entry.mood.name, style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 18.0),
-            const Text(
+            SizedBox(height: 8.0),
+            Text(
+              entry.mood.name,
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 24.0),
+            Text(
               'Feelings:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
             ),
-            const SizedBox(height: 4.0),
-            Text(entry.feelings, style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 20.0),
-            TextButton(
-                onPressed: () {
-                  _removeEntry(context);
-                },
-                child: const Text('Remove Entry', style: TextStyle(color: Colors.red, fontSize: 16))),
+            SizedBox(height: 8.0),
+            Text(
+              entry.feelings,
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 30.0),
+            ElevatedButton(
+              onPressed: () {
+                _removeEntry(context);
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                minimumSize: Size(400, 60),
+                backgroundColor: Colors.red,
+              ),
+              child: Text('Remove Entry', style: TextStyle(fontSize: 20, color: Colors.white)),
+            ),
           ],
         ),
       ),
@@ -462,6 +491,8 @@ class JournalDetailPage extends StatelessWidget {
   }
 
   void _removeEntry(BuildContext context) {
-    Navigator.pop(context, true); // Return true to indicate removal
+    Navigator.pop(context, true);
   }
 }
+
+
