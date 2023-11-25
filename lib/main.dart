@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
 
 // Provider
 import 'package:provider/provider.dart';
@@ -6,6 +9,7 @@ import 'package:medi_minder/providers/medication.dart';
 
 // Pages
 import 'package:medi_minder/pages/home.dart';
+import 'package:medi_minder/pages/journal.dart'; // Import the new file
 
 void main() {
   runApp(
@@ -78,15 +82,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class JournalPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Journal Page'),
     );
   }
 }
