@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'enums/dosage.dart';
+import 'enums/medication.dart';
 
-class AddMedicationPage extends StatelessWidget {
-  AddMedicationPage({super.key});
+class AddMedicationPage extends StatefulWidget {
+  const AddMedicationPage({super.key});
+
+  @override
+  State<AddMedicationPage> createState() => _AddMedicationPageState();
+}
+
+class _AddMedicationPageState extends State<AddMedicationPage> {
   DosageTiming? _dosageTime;
+  MedicationType? _medicationType;
   final bool _isComplete = true;
+
+  final greyLight = 0xFFF4F4F5;
 
   List<Widget> _getDosageTimeButtons() {
     return DosageTiming.values.map((dosageTime) {
@@ -12,8 +22,14 @@ class AddMedicationPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
         onPressed: () {
-          _dosageTime = dosageTime;
+          setState(() {
+            _dosageTime = dosageTime;
+          });
         },
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Colors.black : Colors.grey),
+          backgroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Color(greyLight) : Colors.white),
+        ),
         child: Text(_getDosageTimeText(dosageTime), style: const TextStyle(fontSize: 20)),
         ),
       );
@@ -33,6 +49,31 @@ class AddMedicationPage extends StatelessWidget {
       default:
         return '';
     }
+  }
+
+  List<Widget> _getMedicationTypeButtons() {
+    return MedicationType.values.map((medicationType) {
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Color(greyLight),
+            borderRadius: BorderRadius.circular(100.0),
+          ),
+          child: IconButton(
+            icon: Image.asset('assets/medication/${medicationType.name}.png', height: 60),
+            onPressed: () {
+              setState(() {
+                _medicationType = medicationType;
+              });
+            },
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(_medicationType == medicationType ? const Color(0xFFD9D9D9) : Color(greyLight)),
+            ),
+          ),
+        ),
+      );
+    }).toList();
   }
 
   @override
@@ -60,30 +101,13 @@ class AddMedicationPage extends StatelessWidget {
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('1 of 2', style: TextStyle(fontSize: 16)),
+                Text('1 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
                 Text('Add Medication', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                    onPressed: () => {},
-                    child: const Text('', style: TextStyle(fontSize: 20)),
-                ),
-                ElevatedButton(
-                    onPressed:  () => {},
-                    child: const Text('', style: TextStyle(fontSize: 20)),
-                ),
-                ElevatedButton(
-                    onPressed: () => {},
-                    child: const Text('', style: TextStyle(fontSize: 20)),
-                ),
-                ElevatedButton(
-                    onPressed:  () => {},
-                    child: const Text('', style: TextStyle(fontSize: 20)),
-                ),
-              ],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _getMedicationTypeButtons(),
             ),
             const TextField(
               decoration: InputDecoration(
@@ -95,9 +119,12 @@ class AddMedicationPage extends StatelessWidget {
                 labelText: 'Single dose, e.g. 1 tablet',
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: _getDosageTimeButtons(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _getDosageTimeButtons(),
+              ),
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width,
@@ -106,7 +133,7 @@ class AddMedicationPage extends StatelessWidget {
                 onPressed: (){},
                 style: ButtonStyle(
                   foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-                  backgroundColor:  MaterialStateProperty.all(const Color(0xFFF4F4F5)),
+                  backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
                 ),
                 child: const Text("Fill in the fields"),
                 )
