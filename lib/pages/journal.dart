@@ -285,6 +285,9 @@ class _JournalPageState extends State<JournalPage>
                 firstDay: DateTime.utc(2023, 1, 1),
                 lastDay: DateTime.utc(2023, 12, 31),
                 calendarFormat: CalendarFormat.month,
+                availableCalendarFormats: const {
+                  CalendarFormat.month: 'Month',
+                },
                 onDaySelected: (selectedDay, focusedDay) {
                   setState(() {
                     _selectedDate = DateTime.parse(selectedDay.toString().substring(0, 10));
@@ -297,14 +300,24 @@ class _JournalPageState extends State<JournalPage>
                 eventLoader: (date) {
                   return _events[date] ?? [];
                 },
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDate, day);
+                },
+                calendarStyle: const CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                  ),
+                  selectedTextStyle: TextStyle(color: Colors.white),
+                ),
               ),
               const SizedBox(height: 10),
               // Content for the selected date
               Container(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Text(
-                  'Content for the ${_selectedDate.toLocal().toString().substring(0, 10)}:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  'Content for ${_selectedDate.toLocal().toString().substring(0, 10)}:',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                 ),
               ),
               Expanded(
