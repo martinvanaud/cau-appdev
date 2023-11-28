@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
-import '../enums/dosage.dart';
-import '../enums/medication.dart';
+
+// Entities
+import 'package:medi_minder/entity/medication.dart';
+
+// Enums
+import 'package:medi_minder/enums/dosage.dart';
+import 'package:medi_minder/enums/medication.dart';
+
+// Pages
+import 'home.dart';
 
 class AddMedicationPage extends StatefulWidget {
   const AddMedicationPage({super.key});
@@ -12,9 +20,16 @@ class AddMedicationPage extends StatefulWidget {
 class _AddMedicationPageState extends State<AddMedicationPage> {
   DosageTiming? _dosageTime;
   MedicationType? _medicationType;
-  final bool _isComplete = true;
-
+  String _medicineName = '';
+  String _dosage = '';
+  bool _isComplete = false;
   final greyLight = 0xFFF4F4F5;
+
+  void updateFormStatus() {
+    setState(() {
+      _isComplete = (_dosageTime != null && _medicationType != null && _medicineName != '' && _dosage != '');
+    });
+  }
 
   List<Widget> _getDosageTimeButtons() {
     return DosageTiming.values.map((dosageTime) {
@@ -24,6 +39,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         onPressed: () {
           setState(() {
             _dosageTime = dosageTime;
+            updateFormStatus();
           });
         },
         style: ButtonStyle(
@@ -53,7 +69,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
   List<Widget> _getMedicationTypeButtons() {
     return MedicationType.values.map((medicationType) {
       return Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: Color(greyLight),
@@ -67,6 +83,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             onPressed: () {
               setState(() {
                 _medicationType = medicationType;
+                updateFormStatus();
               });
             },
             style: ButtonStyle(
@@ -111,15 +128,27 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: _getMedicationTypeButtons(),
             ),
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              decoration: const InputDecoration(
                 labelText: 'Name',
               ),
+              onChanged: (name) {
+                setState(() {
+                  _medicineName = name;
+                  updateFormStatus();
+                });
+              },
             ),
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              decoration: const InputDecoration(
                 labelText: 'Single dose, e.g. 1 tablet',
               ),
+              onChanged: (dosage) {
+                setState(() {
+                  _dosage = dosage;
+                  updateFormStatus();
+                });
+              },
             ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -132,12 +161,183 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               width: MediaQuery.of(context).size.width,
               child: !_isComplete ?
               ElevatedButton(
-                onPressed: (){},
+                onPressed: null,
                 style: ButtonStyle(
                   foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
                   backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
                 ),
                 child: const Text("Fill in the fields"),
+                )
+              :
+              ElevatedButton(
+                onPressed: () {
+                  Medication medication = Medication(
+                    name: _medicineName,
+                    type: _medicationType!,
+                    dosages: [],
+                    duration: 0,
+                  );
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddMedicationSchedulePage(),
+                      settings: RouteSettings(
+                        arguments: medication,
+                      ),
+                    )
+                  );
+                },
+                style: ButtonStyle(
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
+                ),
+                child: const Text('Next'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AddMedicationSchedulePage extends StatefulWidget {
+  const AddMedicationSchedulePage({super.key});
+
+  @override
+  State<AddMedicationSchedulePage> createState() => _AddMedicationSchedulePageState();
+}
+
+class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
+  final bool _isComplete = true;
+  final greyLight = 0xFFF4F4F5;
+  TimeOfDay _timeOfDay = TimeOfDay.now();
+  bool _addReminder = false;
+
+  @override
+  Widget build(BuildContext context) {
+    Medication medication = ModalRoute.of(context)?.settings.arguments as Medication;
+
+    return Scaffold(
+      appBar: AppBar(
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: 'Close',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage())),
+          ),
+        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        )
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('2 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                const Text('Schedule', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 4,
+                      height: 60,
+                      child: Container(
+                        color: Color(greyLight),
+                      ),
+                    ),
+                    Image.asset(
+                      'assets/medication/${medication.type.name}.png',
+                      height: 100,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(medication.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('${medication.type.name}, medication.dosageTiming', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 16
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Dose 1', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          textStyle: const TextStyle(fontSize: 20),
+                        ),
+                        onPressed: () {
+                          showTimePicker(
+                            context: context,
+                            initialTime: _timeOfDay,
+                            initialEntryMode: TimePickerEntryMode.dial,
+                          ).then((time) {
+                            if (time != null) {
+                              setState(() {
+                                _timeOfDay = time;
+                              });
+                            }
+                          });
+                        },
+                        child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Add',
+                  iconSize: 25,
+                  style: ButtonStyle(
+                    backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
+                  ),
+                  onPressed: () {},
+                ),
+                const SizedBox(
+                  height: 16
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Reminders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Switch(
+                      value: _addReminder,
+                      inactiveThumbColor: Colors.white,
+                      inactiveTrackColor: Color(greyLight),
+                      onChanged: (bool value) {
+                        setState(() {
+                          _addReminder = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: !_isComplete ?
+              ElevatedButton(
+                onPressed: (){},
+                style: ButtonStyle(
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+                  backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
+                ),
+                child: const Text("Add medication times"),
                 )
               :
               ElevatedButton(
