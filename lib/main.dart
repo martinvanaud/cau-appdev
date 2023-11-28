@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:convert';
+
 // Provider
 import 'package:provider/provider.dart';
 import 'package:medi_minder/providers/medication.dart';
 
 // Pages
 import 'package:medi_minder/pages/home.dart';
-import 'addmedicationpage.dart';
+import 'package:medi_minder/pages/journal.dart'; // Import the new file
 
 void main() {
   runApp(
@@ -32,11 +35,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/',
-      routes: {
-        '/': (context) => const MyHomePage(),
-        '/addMedication': (context) => AddMedicationPage(),
-      },
-      // home: const MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
@@ -83,34 +82,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: const Center(
-        child: Text('Home Page'),
-      ),
-      floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        Navigator.pushNamed(context, '/addMedication');
-      },
-      tooltip: 'Add medication',
-      shape: const CircleBorder(),
-      child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class JournalPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Journal Page'),
     );
   }
 }

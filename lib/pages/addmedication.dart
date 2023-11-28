@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'enums/dosage.dart';
-import 'enums/medication.dart';
+import '../enums/dosage.dart';
+import '../enums/medication.dart';
 
 class AddMedicationPage extends StatefulWidget {
   const AddMedicationPage({super.key});
@@ -30,8 +30,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
           foregroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Colors.black : Colors.grey),
           backgroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Color(greyLight) : Colors.white),
         ),
-        child: Text(_getDosageTimeText(dosageTime), style: const TextStyle(fontSize: 20)),
-        ),
+        child: Text(_getDosageTimeText(dosageTime), style: const TextStyle(fontSize: 20))),
       );
     }).toList();
   }
@@ -61,7 +60,10 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             borderRadius: BorderRadius.circular(100.0),
           ),
           child: IconButton(
-            icon: Image.asset('assets/medication/${medicationType.name}.png', height: 60),
+            icon: Image.asset(
+              'assets/medication/${medicationType.name}.png',
+              height: 60
+            ),
             onPressed: () {
               setState(() {
                 _medicationType = medicationType;

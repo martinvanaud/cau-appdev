@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:medi_minder/entity/schedule.dart';
+import 'package:medi_minder/pages/addmedication.dart';
 
 // Provider
 import 'package:provider/provider.dart';
@@ -57,7 +58,7 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 15.0, right: 10.0),
         child: FloatingActionButton(
           onPressed: () {
-            // TODO: Add the action here
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AddMedicationPage()));
           },
           backgroundColor: Colors.blue.shade800,
           shape: const CircleBorder(),
