@@ -54,89 +54,176 @@ class _JournalPageState extends State<JournalPage> {
     }
   }
 
+  bool hasJournalForToday() {
+    final today = DateTime.now().toString().substring(0, 10); // YYYY-MM-DD
+    return journalEntries.any((entry) => entry.date.startsWith(today));
+  }
+
+  Widget buildJournalButtonOrText() {
+    if (hasJournalForToday()) {
+      return Center(
+        child: Text(
+          'Good job! Journal added for today.',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ElevatedButton(
+            onPressed: () async {
+              final symptoms = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SymptomsEntryPage()),
+              );
+
+              if (symptoms != null) {
+                final mood = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MoodEntryPage()),
+                );
+
+                if (mood != null) {
+                  final feelings = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FeelingsEntryPage()),
+                  );
+
+                  if (feelings != null) {
+                    final newEntry = JournalEntry(
+                      date: DateTime.now().toString().substring(0, 16),
+                      symptoms: symptoms,
+                      feelings: feelings,
+                      mood: enumFromString(Mood.values, mood),
+                    );
+
+                    setState(() {
+                      journalEntries.add(newEntry);
+                      _saveJournalEntries(); // Save entries when a new one is added
+                    });
+                  }
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              minimumSize: Size(double.infinity, 60),
+              backgroundColor: Colors.blue,
+            ),
+            child: Text('Add Journal for Today', style: TextStyle(fontSize: 18, color: Colors.white)),
+          ),
+        ),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-            'Health Journal',
+          'Health Journal',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: ListView.builder(
-        itemCount: journalEntries.length,
-        itemBuilder: (context, index) {
-          final entry = journalEntries.reversed.toList()[index];
-          Color lineColor;
-
-          // Set line color based on mood
-          switch (entry.mood) {
-            case Mood.good:
-              lineColor = Colors.green;
-              break;
-            case Mood.okay:
-              lineColor = Colors.lightGreen;
-              break;
-            case Mood.neutral:
-              lineColor = Colors.yellow;
-              break;
-            case Mood.bad:
-              lineColor = Colors.orange;
-              break;
-            case Mood.terrible:
-              lineColor = Colors.red;
-              break;
-            default:
-              lineColor = Colors.white;
-          }
-
-          return Container(
-            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 4,
-                  offset: Offset(0, 3),
-                ),
-              ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: buildJournalButtonOrText(),
+          ),
+          const SizedBox(height: 10,),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Recent Journal Entries',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            child: ListTile(
-              title: Text(
-                entry.date,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
-              tileColor: Colors.transparent,
-              contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-              leading: Container(
-                width: 8.0,
-                color: lineColor,
-              ),
-              onTap: () async {
-                final removeEntry = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => JournalDetailPage(entry: entry),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: journalEntries.length,
+              itemBuilder: (context, index) {
+                final entry = journalEntries.reversed.toList()[index];
+                Color lineColor;
+
+                // Set line color based on mood
+                switch (entry.mood) {
+                  case Mood.good:
+                    lineColor = Colors.green;
+                    break;
+                  case Mood.okay:
+                    lineColor = Colors.lightGreen;
+                    break;
+                  case Mood.neutral:
+                    lineColor = Colors.yellow;
+                    break;
+                  case Mood.bad:
+                    lineColor = Colors.orange;
+                    break;
+                  case Mood.terrible:
+                    lineColor = Colors.red;
+                    break;
+                  default:
+                    lineColor = Colors.white;
+                }
+
+                return Container(
+                  margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 4,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    title: Text(
+                      entry.date,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(entry.symptoms, style: TextStyle(fontSize: 16)),
+                    tileColor: Colors.transparent,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+                    leading: Container(
+                      width: 8.0,
+                      color: lineColor,
+                    ),
+                    onTap: () async {
+                      final removeEntry = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => JournalDetailPage(entry: entry),
+                        ),
+                      );
+
+                      if (removeEntry == true) {
+                        setState(() {
+                          journalEntries.remove(entry);
+                          _saveJournalEntries(); // Save entries after removal
+                        });
+                      }
+                    },
                   ),
                 );
-
-                if (removeEntry == true) {
-                  setState(() {
-                    journalEntries.remove(entry);
-                    _saveJournalEntries(); // Save entries after removal
-                  });
-                }
               },
             ),
-          );
-        },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -179,6 +266,7 @@ class _JournalPageState extends State<JournalPage> {
     );
   }
 }
+
 
 class SymptomsEntryPage extends StatefulWidget {
   @override
@@ -271,7 +359,7 @@ class _SymptomsEntryPageState extends State<SymptomsEntryPage> {
           });
         },
         style: ElevatedButton.styleFrom(
-          primary: isSelected ? Colors.blue : Colors.white38,
+          backgroundColor: isSelected ? Colors.blue : Colors.white38,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
