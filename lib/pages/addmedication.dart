@@ -117,26 +117,64 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
           onPressed: () => Navigator.pop(context),
         )
       ),
-      body: Padding(
+      floatingActionButtonLocation:
+        FloatingActionButtonLocation.centerFloat,
+        resizeToAvoidBottomInset: false,
+      floatingActionButton: Container(
+        height: 50,
+        margin: const EdgeInsets.all(10),
+        child: !_isComplete ?
+          ElevatedButton(
+            onPressed: null,
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+              backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
+            ),
+            child: const Center(child: Text("Fill in the fields", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+            )
+          :
+          ElevatedButton(
+            onPressed: () {
+              Medication medication = Medication(
+                name: _medicineName,
+                type: _medicationType!,
+                dosages: [],
+                duration: 0,
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddMedicationSchedulePage(),
+                  settings: RouteSettings(
+                    arguments: medication,
+                  ),
+                )
+              );
+            },
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
+            ),
+            child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          ),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('1 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                Text('Add Medication', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-              ],
-            ),
+            const Text('1 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
+            const Text('Add Medication', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: _getMedicationTypeButtons(),
             ),
+            const SizedBox(height: 20),
             TextField(
               decoration: const InputDecoration(
                 labelText: 'Name',
+                border: InputBorder.none,
               ),
               onChanged: (name) {
                 setState(() {
@@ -145,9 +183,11 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                 });
               },
             ),
+            const SizedBox(height: 20),
             TextField(
               decoration: const InputDecoration(
                 labelText: 'Single dose, e.g. 1 tablet',
+                border: InputBorder.none,
               ),
               onChanged: (dosage) {
                 setState(() {
@@ -156,45 +196,8 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                 });
               },
             ),
+            const SizedBox(height: 20),
             _getDosageTimeButtons(),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: !_isComplete ?
-              ElevatedButton(
-                onPressed: null,
-                style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-                  backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
-                ),
-                child: const Text("Fill in the fields"),
-                )
-              :
-              ElevatedButton(
-                onPressed: () {
-                  Medication medication = Medication(
-                    name: _medicineName,
-                    type: _medicationType!,
-                    dosages: [],
-                    duration: 0,
-                  );
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddMedicationSchedulePage(),
-                      settings: RouteSettings(
-                        arguments: medication,
-                      ),
-                    )
-                  );
-                },
-                style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
-                ),
-                child: const Text('Next'),
-              ),
-            ),
           ],
         ),
       ),
@@ -291,6 +294,31 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
           onPressed: () => Navigator.pop(context),
         )
       ),
+      floatingActionButtonLocation:
+        FloatingActionButtonLocation.centerFloat,
+        resizeToAvoidBottomInset: false,
+      floatingActionButton: Container(
+        height: 50,
+        margin: const EdgeInsets.all(10),
+        child: !_isComplete ?
+          ElevatedButton(
+            onPressed: (){},
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+              backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
+            ),
+            child: const Center(child: Text("Add medication times", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          )
+          :
+          ElevatedButton(
+            onPressed: () {},
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
+            ),
+            child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -357,29 +385,8 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                     ),
                   ],
                 ),
-                !_addReminder ? _getReminderOptions() : const SizedBox.shrink(),
+                _addReminder ? _getReminderOptions() : const SizedBox.shrink(),
               ],
-            ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: !_isComplete ?
-              ElevatedButton(
-                onPressed: (){},
-                style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-                  backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
-                ),
-                child: const Text("Add medication times"),
-                )
-              :
-              ElevatedButton(
-                onPressed: () {},
-                style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
-                ),
-                child: const Text('Next'),
-              ),
             ),
           ],
         ),
