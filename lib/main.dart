@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'dart:convert';
+
+import 'firebase_options.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Provider
 import 'package:provider/provider.dart';
 import 'package:medi_minder/providers/medication.dart';
 
 // Pages
+import 'package:medi_minder/pages/login.dart';
 import 'package:medi_minder/pages/home.dart';
-import 'package:medi_minder/pages/journal.dart'; // Import the new file
+import 'package:medi_minder/pages/journal.dart';
+import 'package:medi_minder/pages/profile.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(
     ChangeNotifierProvider(
       create: (context) {
@@ -19,7 +29,7 @@ void main() {
         provider.initializeMedications();
         return provider;
       },
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -35,7 +45,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: StreamBuilder(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return const MyHomePage();
+          } else {
+            return const LoginPage();
+          }
+        },
+      ),
     );
   }
 }
@@ -51,9 +70,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    HomePage(),
+    const HomePage(),
     JournalPage(),
-    ProfilePage(),
+    const ProfilePage(),
   ];
 
   @override
@@ -82,15 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile Page'),
     );
   }
 }
