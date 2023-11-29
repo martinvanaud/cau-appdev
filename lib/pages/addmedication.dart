@@ -260,7 +260,6 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
             onPressed: () {
               setState(() {
                 _reminderTime = reminderTime;
-                // updateFormStatus();
               });
             },
             style: ButtonStyle(

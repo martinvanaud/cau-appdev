@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:medi_minder/entity/schedule.dart';
 import 'package:medi_minder/pages/addmedication.dart';
 
 // Provider
@@ -321,7 +320,7 @@ class MedicationSchedule extends StatelessWidget {
     List<Medication> medications =
         context.watch<MedicationProvider>().medications;
 
-    var groupedMedications = groupBy<Medication, Schedule>(
+    var groupedMedications = groupBy<Medication, TimeOfDay>(
       medications,
       (med) => med.dosages.map((dosage) => dosage.timeOfDay).reduce((a, b) =>
           a.hour == b.hour
