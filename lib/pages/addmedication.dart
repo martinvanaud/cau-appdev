@@ -31,24 +31,30 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
     });
   }
 
-  List<Widget> _getDosageTimeButtons() {
-    return DosageTiming.values.map((dosageTime) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            _dosageTime = dosageTime;
-            updateFormStatus();
-          });
-        },
-        style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Colors.black : Colors.grey),
-          backgroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Color(greyLight) : Colors.white),
-        ),
-        child: Text(_getDosageTimeText(dosageTime), style: const TextStyle(fontSize: 20))),
-      );
-    }).toList();
+  Widget _getDosageTimeButtons() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: DosageTiming.values.map((dosageTime) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _dosageTime = dosageTime;
+                updateFormStatus();
+              });
+            },
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Colors.black : Colors.grey),
+              backgroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Color(greyLight) : Colors.white),
+            ),
+            child: Text(_getDosageTimeText(dosageTime), style: TextStyle(fontSize: 20,fontWeight: _dosageTime == dosageTime ? FontWeight.bold : FontWeight.normal))),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   String _getDosageTimeText(DosageTiming dosageTime) {
@@ -150,13 +156,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                 });
               },
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _getDosageTimeButtons(),
-              ),
-            ),
+            _getDosageTimeButtons(),
             SizedBox(
               width: MediaQuery.of(context).size.width,
               child: !_isComplete ?
@@ -210,10 +210,69 @@ class AddMedicationSchedulePage extends StatefulWidget {
 }
 
 class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
-  final bool _isComplete = true;
   final greyLight = 0xFFF4F4F5;
+  final List<int> _reminderTimes = [5, 10, 30, 60, 90, 120, 180, 240];
   TimeOfDay _timeOfDay = TimeOfDay.now();
   bool _addReminder = false;
+  bool _isComplete = false;
+  int _reminderTime = 0;
+
+  Widget _showDosageIntakes() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text('Dose 1', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextButton(
+            style: TextButton.styleFrom(
+              textStyle: const TextStyle(fontSize: 20),
+            ),
+            onPressed: () {
+              showTimePicker(
+                context: context,
+                initialTime: _timeOfDay,
+                initialEntryMode: TimePickerEntryMode.dial,
+              ).then((time) {
+                if (time != null) {
+                  setState(() {
+                    _timeOfDay = time;
+                  });
+                }
+              });
+            },
+            child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _getReminderOptions() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: _reminderTimes.map((reminderTime) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _reminderTime = reminderTime;
+                // updateFormStatus();
+              });
+            },
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(_reminderTime == reminderTime ? Colors.black : Colors.grey),
+              backgroundColor: MaterialStateProperty.all<Color>(_reminderTime == reminderTime ? Color(greyLight) : Colors.white),
+            ),
+            child: Text('$reminderTime min', style: TextStyle(fontSize: 20, fontWeight: _reminderTime == reminderTime ? FontWeight.bold : FontWeight.normal))),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -270,34 +329,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                 const SizedBox(
                   height: 16
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Dose 1', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          textStyle: const TextStyle(fontSize: 20),
-                        ),
-                        onPressed: () {
-                          showTimePicker(
-                            context: context,
-                            initialTime: _timeOfDay,
-                            initialEntryMode: TimePickerEntryMode.dial,
-                          ).then((time) {
-                            if (time != null) {
-                              setState(() {
-                                _timeOfDay = time;
-                              });
-                            }
-                          });
-                        },
-                        child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
+                _showDosageIntakes(),
                 IconButton(
                   icon: const Icon(Icons.add),
                   tooltip: 'Add',
@@ -326,6 +358,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                     ),
                   ],
                 ),
+                !_addReminder ? _getReminderOptions() : const SizedBox.shrink(),
               ],
             ),
             SizedBox(
