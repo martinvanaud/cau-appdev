@@ -18,18 +18,12 @@ class AddMedicationPage extends StatefulWidget {
 }
 
 class _AddMedicationPageState extends State<AddMedicationPage> {
+  final _formKey = GlobalKey<FormState>();
   DosageTiming? _dosageTime;
   MedicationType? _medicationType;
   String _medicineName = '';
   String _dosage = '';
-  bool _isComplete = false;
   final greyLight = 0xFFF4F4F5;
-
-  void updateFormStatus() {
-    setState(() {
-      _isComplete = (_dosageTime != null && _medicationType != null && _medicineName != '' && _dosage != '');
-    });
-  }
 
   Widget _getDosageTimeButtons() {
     return SingleChildScrollView(
@@ -43,7 +37,6 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             onPressed: () {
               setState(() {
                 _dosageTime = dosageTime;
-                updateFormStatus();
               });
             },
             style: ButtonStyle(
@@ -89,7 +82,6 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             onPressed: () {
               setState(() {
                 _medicationType = medicationType;
-                updateFormStatus();
               });
             },
             style: ButtonStyle(
@@ -123,33 +115,28 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
       floatingActionButton: Container(
         height: 50,
         margin: const EdgeInsets.all(10),
-        child: !_isComplete ?
-          ElevatedButton(
-            onPressed: null,
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-              backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
-            ),
-            child: const Center(child: Text("Fill in the fields", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-            )
-          :
-          ElevatedButton(
+        child: ElevatedButton(
             onPressed: () {
-              Medication medication = Medication(
-                name: _medicineName,
-                type: _medicationType!,
-                dosages: [],
-                duration: 0,
-              );
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddMedicationSchedulePage(),
-                  settings: RouteSettings(
-                    arguments: medication,
-                  ),
-                )
-              );
+              setState(() {
+                if (_formKey.currentState!.validate() && _dosageTime != null && _medicationType != null) {
+                  _formKey.currentState!.save();
+                  Medication medication = Medication(
+                    name: _medicineName,
+                    type: _medicationType!,
+                    dosages: [],
+                    duration: 0,
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddMedicationSchedulePage(),
+                      settings: RouteSettings(
+                        arguments: medication,
+                      ),
+                    )
+                  );
+                }
+              });
             },
             style: ButtonStyle(
               foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -158,47 +145,66 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('1 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
-            const Text('Add Medication', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: _getMedicationTypeButtons(),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: InputBorder.none,
+      body: Form(
+        key:_formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('1 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
+              const Text('Add Medication', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _getMedicationTypeButtons(),
               ),
-              onChanged: (name) {
-                setState(() {
-                  _medicineName = name;
-                  updateFormStatus();
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Single dose, e.g. 1 tablet',
-                border: InputBorder.none,
+              const SizedBox(height: 20),
+              TextFormField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Name',
+                  hintText: 'e.g. Aspirin',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Medication name is required.';
+                  }
+                  return null;
+                },
+                onSaved: (name) {
+                  setState(() {
+                    _medicineName = name!;
+                  });
+                },
               ),
-              onChanged: (dosage) {
-                setState(() {
-                  _dosage = dosage;
-                  updateFormStatus();
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            _getDosageTimeButtons(),
-          ],
+              const SizedBox(height: 20),
+              TextFormField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Single dose intake',
+                  hintText: 'e.g. 1 tablet',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Dosage is required.';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Dosage must be a number.';
+                  }
+                  return null;
+                },
+                onSaved: (dosage) {
+                  setState(() {
+                    _dosage = dosage!;
+                  });
+                },
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
+              _getDosageTimeButtons(),
+            ],
+          ),
         ),
       ),
     );
