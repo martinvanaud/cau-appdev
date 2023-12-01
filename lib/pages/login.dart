@@ -10,13 +10,12 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
-      body: LoginForm()
+      body: const LoginForm()
     );
   }
 }
-
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -31,6 +30,15 @@ class _LoginFormState extends State<LoginForm> {
   String email = '';
   String password = '';
 
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -41,50 +49,60 @@ class _LoginFormState extends State<LoginForm> {
           child: ListView(
             children: [
               TextFormField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email',
                 ),
                 onChanged: (value) {
                   email = value;
                 },
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               TextFormField(
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
                 ),
                 onChanged: (value) {
                   password = value;
                 },
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               ElevatedButton(
                   onPressed: () async {
-                    final currentUser = await _authentication.signInWithEmailAndPassword(
+                    try {
+                      UserCredential currentUser = await _authentication.signInWithEmailAndPassword(
                         email: email,
-                        password: password
-                    );
+                        password: password,
+                      );
 
-                    if (currentUser.user != null) {
-                      _formKey.currentState!.reset();
+                      if (currentUser.user != null) {
+                        _formKey.currentState!.reset();
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'invalid-login-credentials') {
+                        _showErrorSnackbar('Wrong email/password provided.');
+                      } else {
+                        _showErrorSnackbar('Login failed: ${e.message}');
+                      }
+                    } catch (e) {
+                      _showErrorSnackbar('An unexpected error occurred.');
                     }
                   },
-                  child: Text('Enter')
+                  child: const Text('Enter')
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text('If you did not register,'),
+                  const Text('If you did not register,'),
                   TextButton(
                       onPressed: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterPage()));
                       },
-                      child: Text('Register your email')
+                      child: const Text('Register your email')
                   )
                 ],
               ),
