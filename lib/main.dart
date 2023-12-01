@@ -22,16 +22,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) {
-        MedicationProvider provider = MedicationProvider();
-        provider.initializeMedications();
-        return provider;
-      },
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp(),);
 }
 
 class MyApp extends StatelessWidget {
@@ -70,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const HomePage(),
+    HomePage(),
     JournalPage(),
     ProfilePage(),
   ];
