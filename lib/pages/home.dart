@@ -1,8 +1,9 @@
+import 'dart:js_util';
+
 import 'package:flutter/material.dart';
-import 'package:medi_minder/entity/schedule.dart';
+import 'package:medi_minder/entity/profile.dart';
 
 // Provider
-import 'package:provider/provider.dart';
 import 'package:medi_minder/providers/medication.dart';
 
 // Collection
@@ -17,47 +18,104 @@ import 'dart:math' as math;
 // Medication
 import 'package:medi_minder/entity/medication.dart';
 
-class HomePage extends StatelessWidget {
+// Firebase
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  final String name = "Sasha"; // Name variable
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+
+  late Stream<Profile?> getUserProfileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserProfileFuture =
+        getUserProfileStream(); // Assign the future in initState
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: HomeHeader(name: name),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: MedicationPlanProgress(percentage: 73),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: GetVaccinated(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            MedicationSchedule(), // No changes needed here
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SafeArea(
+          child: StreamBuilder<Profile?>(
+              stream: getUserProfileStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text(
+                      'Error: ${snapshot.error}'); // Handle error scenario
+                } else {
+                  // Data is available, use snapshot.data
+                  Profile? userProfile = snapshot.data;
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: HomeHeader(
+                            name: userProfile?.username ??
+                                'User'), // Use null-aware operator
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: MedicationPlanProgress(percentage: 73),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: GetVaccinated(),
+                      ),
+                      Expanded(
+                        child: MedicationSchedule(),
+                      ),
+                    ],
+                  );
+                }
+              }),
         ),
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 15.0, right: 10.0),
         child: FloatingActionButton(
-          onPressed: () {
-            // TODO: Add the action here
+          onPressed: () async {
+            User? user = _auth.currentUser;
+            if (user != null) {
+              // Here we have the UID, which we can use as the document ID
+              String uid = user.uid;
+
+              // Reference to the user's document in the 'medication' collection
+              DocumentReference userDoc =
+                  _firestore.collection('users').doc(uid);
+
+              // Now, create a sub-collection under the user's document for medications
+              CollectionReference userMedications =
+                  userDoc.collection('medications');
+
+              // Set the initial data for the user's document
+              await userMedications.add({
+                'type': 'cachet',
+                'name': 'Madragol',
+                'dosages': [
+                  {
+                    'numberOfItems': 3,
+                    'timeOfDay': {'hour': "8", 'minute': "30"},
+                    'timing': 'afterMeal',
+                  }
+                ],
+                'duration': 3,
+                'notificationsEnabled': false,
+              });
+            }
           },
           backgroundColor: Colors.blue.shade800,
           shape: const CircleBorder(),
@@ -128,7 +186,7 @@ class _MedicationPlanProgressState extends State<MedicationPlanProgress> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 400,
+      width: MediaQuery.of(context).size.width,
       height: 150,
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       decoration: BoxDecoration(
@@ -245,14 +303,12 @@ class MedicationCard extends StatelessWidget {
   final String imagePath;
   final String title;
   final String subtitle;
-  final String duration;
 
   const MedicationCard({
     Key? key,
     required this.imagePath,
     required this.title,
     required this.subtitle,
-    required this.duration,
   }) : super(key: key);
 
   @override
@@ -295,7 +351,7 @@ class MedicationCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "$subtitle for $duration days",
+                      subtitle,
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
@@ -313,57 +369,148 @@ class MedicationCard extends StatelessWidget {
 }
 
 class MedicationSchedule extends StatelessWidget {
-  const MedicationSchedule({super.key});
+  MedicationSchedule({super.key});
+
+  final _auth = FirebaseAuth.instance;
+  final MedicationProvider _medicationProvider = MedicationProvider();
 
   @override
   Widget build(BuildContext context) {
-    List<Medication> medications =
-        context.watch<MedicationProvider>().medications;
+    User? user = _auth.currentUser;
+    if (user == null) {
+      return const Text('User not authenticated');
+    }
 
-    var groupedMedications = groupBy<Medication, Schedule>(
-      medications,
-      (med) => med.dosages.map((dosage) => dosage.timeOfDay).reduce((a, b) =>
-          a.hour == b.hour
-              ? (a.minute < b.minute ? a : b)
-              : (a.hour < b.hour ? a : b)),
-    );
+    return StreamBuilder<List<Medication>>(
+      stream: _medicationProvider.getUserMedicationsStream(user.uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData) {
+          List<Medication> medications = snapshot.data!;
+          return ListView.builder(
+            itemCount: medications.length,
+            itemBuilder: (context, index) {
+              Medication medication = medications[index];
+              return Dismissible(
+                key: Key(medication.id),
+                onDismissed: (direction) {
+                  _medicationProvider.removeUserMedication(user.uid, medication.id);
+                },
+                background: Container(
+                  color: Colors.white,
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 20),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.check, color: Colors.black),
+                  ),
+                ),
+                secondaryBackground: Container(
+                  color: Colors.white,
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 20),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.check, color: Colors.black),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: MedicationCard(
+                    imagePath: 'assets/medication/${medication.type.name}.png',
+                    title: medication.name,
+                      subtitle: ''
+                          '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
+                          '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals")}'
+                          'for ${medication.duration} ${(medication.duration > 1 ? "days" : "day")}',
+                  ),
+                ),
+              );
 
-    List<Widget> scheduleWidgets = [];
-    groupedMedications.forEach((schedule, meds) {
-      meds.sort((a, b) => a.duration.compareTo(b.duration));
-
-      scheduleWidgets.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: Text(
-            '${schedule.hour.toString().padLeft(2, '0')}:${schedule.minute.toString().padLeft(2, '0')}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-        ),
-      );
-
-      scheduleWidgets.addAll(
-        meds.map(
-          (med) => Padding(
-            padding: const EdgeInsets.only(bottom: 20.0, left: 16, right: 16),
-            child: MedicationCard(
-              imagePath: ('assets/medication/${med.type.name}.png'),
-              title: med.name,
-              subtitle: '${med.dosages[0].numberOfItems.toString()} ${med.type.name}',
-              duration: med.duration.toString(),
-            ),
-          ),
-        ),
-      );
-    });
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (BuildContext context, int index) {
-          return scheduleWidgets[index];
-        },
-        childCount: scheduleWidgets.length,
-      ),
+              // return Dismissible(
+              //   key: Key(medication.id),
+              //   onDismissed: (direction) {
+              //     _medicationProvider.removeUserMedication(user.uid, medication.id);
+              //   },
+              //   background: Container(color: Colors.red),
+              //   child: Padding(
+              //     padding: const EdgeInsets.only(bottom: 8.0),
+              //     child: MedicationCard(
+              //       imagePath: 'assets/medication/${medication.type.name}.png',
+              //       title: medication.name,
+              //       subtitle: ''
+              //         '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
+              //         '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals ")}'
+              //         'for ${medication.duration} ${(medication.duration > 1 ? "days" : "day")}',
+              //     ),
+              //   ),
+              // );
+            },
+          );
+        } else {
+          return const Text('No medications found');
+        }
+      },
     );
   }
 }
+
+// class MedicationSchedule extends StatelessWidget {
+//   MedicationSchedule({super.key});
+//
+//   final _auth = FirebaseAuth.instance;
+//   final MedicationProvider _medicationProvider = MedicationProvider();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     User? user = _auth.currentUser;
+//     if (user == null) {
+//       return const Text('User not authenticated');
+//     }
+//
+//     return StreamBuilder<List<Medication>>(
+//       stream: _medicationProvider.getUserMedicationsStream(user.uid),
+//       builder: (context, snapshot) {
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return const CircularProgressIndicator();
+//         } else if (snapshot.hasError) {
+//           return Text('Error: ${snapshot.error}');
+//         } else if (snapshot.hasData) {
+//           List<Medication> medications = snapshot.data!;
+//           return ListView.builder(
+//             itemCount: medications.length,
+//             itemBuilder: (context, index) {
+//               Medication medication = medications[index];
+//               return Padding(
+//                 padding: const EdgeInsets.only(bottom: 8.0), // Adjust the padding as needed
+//                 child: MedicationCard(
+//                   imagePath: 'assets/medication/${medication.type.name}.png',
+//                   title: medication.name,
+//                   subtitle: ''
+//                       '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
+//                       '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals ")}'
+//                       'for ${medication.duration} ${(medication.duration > 1 ? "days" : "day")}',
+//                 ),
+//               );
+//             },
+//           );
+//         } else {
+//           return const Text('No medications found');
+//         }
+//       },
+//     );
+//   }
+// }
