@@ -1,10 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:medi_minder/enums/dosage.dart';
-
-import 'package:medi_minder/entity/schedule.dart';
 
 class Dosage {
   final int numberOfItems;
-  final Schedule timeOfDay;
+  final TimeOfDay timeOfDay;
   final DosageTiming timing;
 
   Dosage({
@@ -12,4 +11,26 @@ class Dosage {
     required this.timeOfDay,
     required this.timing,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'numberOfItems': numberOfItems,
+      'timeOfDay': {
+        'hour': timeOfDay.hour.toString(),
+        'minute': timeOfDay.minute.toString(),
+      },
+      'timing': timing.toString(),
+    };
+  }
+
+  static Dosage fromMap(Map<String, dynamic> map) {
+    return Dosage(
+      numberOfItems: map['numberOfItems'] is int ? map['numberOfItems'] : int.parse(map['numberOfItems'].toString()),
+      timeOfDay: TimeOfDay(
+          hour: int.parse(map['timeOfDay']['hour']),
+          minute: int.parse(map['timeOfDay']['minute'])
+      ),
+      timing: DosageTiming.values.firstWhere((e) => e.toString() == 'DosageTiming.${map['timing']}'),
+    );
+  }
 }
