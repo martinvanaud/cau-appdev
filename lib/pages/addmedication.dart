@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medi_minder/entity/dosage.dart';
 
 // Entities
 import 'package:medi_minder/entity/medication.dart';
@@ -108,6 +109,12 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
     });
   }
 
+  int _getDaysBetweenDates() {
+    DateTime now = DateTime.now();
+    int days = _selectedDate!.difference(now).inDays;
+    return days == 0 ? 0 : days + 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,12 +141,23 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             onPressed: () {
               setState(() {
                 if (_formKey.currentState!.validate() && _dosageTime != null && _medicationType != null) {
+                  if (_isMedicationShortTerm && _selectedDate == null) {
+                    return;
+                  }
+                  else if (!_isMedicationShortTerm) {
+                    _selectedDate = null;
+                  }
                   _formKey.currentState!.save();
+                  Dosage dosage = Dosage(
+                    numberOfItems: int.parse(_dosage),
+                    timeOfDay: null,
+                    timing: _dosageTime!,
+                  );
                   Medication medication = Medication(
                     name: _medicineName,
                     type: _medicationType!,
-                    dosages: [],
-                    duration: 0,
+                    dosages: [dosage],
+                    duration: _isMedicationShortTerm ? _getDaysBetweenDates() : -1,
                   );
                   Navigator.push(
                     context,
@@ -332,7 +350,6 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
   @override
   Widget build(BuildContext context) {
     Medication medication = ModalRoute.of(context)?.settings.arguments as Medication;
-
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -401,7 +418,10 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(medication.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('${medication.type.name}, medication.dosageTiming', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                        medication.duration == -1 ?
+                        Text('Take ${medication.type.name}, ${medication.}', style: const TextStyle(fontSize: 16, color: Colors.grey))
+                        :
+                        Text('Take ${medication.type.name}, ${medication.duration} days left', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                       ],
                     ),
                   ],

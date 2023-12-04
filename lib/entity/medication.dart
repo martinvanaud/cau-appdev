@@ -6,7 +6,6 @@ class Medication {
   final String name;
   final List<Dosage> dosages;
   final int duration;
-  final DateTime? endDate;
   final bool notificationsEnabled;
 
   Medication({
@@ -14,7 +13,6 @@ class Medication {
     required this.name,
     required this.dosages,
     required this.duration,
-    this.endDate,
     this.notificationsEnabled = false,
   });
 }
