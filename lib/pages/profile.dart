@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'ChangePasswordPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -64,21 +66,27 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            ExpansionTile(
-              title: const Text('Profile informations',
+            const ExpansionTile(
+              title: Text('Profile informations',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 30,
                 ),),
               children: [
                 ListTile(
-                  title: Text('Name: ...'),
+                  title: Text('Username: ...'),
                 ),
                 ListTile(
                   title: Text('Age: ...'),
                 ),
                 ListTile(
-                  title: Text("email: ${loggedUser!.email!}"),
+                  title: Text("email: ..."),
+                ),
+                ListTile(
+                  title: Text('Height: ...'),
+                ),
+                ListTile(
+                  title: Text('Weight:'),
                 ),
               ],
             ),
