@@ -19,11 +19,13 @@ class AddMedicationPage extends StatefulWidget {
 
 class _AddMedicationPageState extends State<AddMedicationPage> {
   final _formKey = GlobalKey<FormState>();
+  final greyLight = 0xFFF4F4F5;
   DosageTiming? _dosageTime;
   MedicationType? _medicationType;
   String _medicineName = '';
   String _dosage = '';
-  final greyLight = 0xFFF4F4F5;
+  bool _isMedicationShortTerm = false;
+  DateTime? _selectedDate;
 
   Widget _getDosageTimeButtons() {
     return SingleChildScrollView(
@@ -91,6 +93,19 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         ),
       );
     }).toList();
+  }
+
+  void _showDatePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(DateTime.now().year + 100),
+    ).then((selectedDate) {
+      setState(() {
+        _selectedDate = selectedDate!;
+      });
+    });
   }
 
   @override
@@ -203,6 +218,38 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               ),
               const SizedBox(height: 20),
               _getDosageTimeButtons(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Short term intake?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Switch(
+                    value: _isMedicationShortTerm,
+                    inactiveThumbColor: Colors.white,
+                    inactiveTrackColor: Color(greyLight),
+                    onChanged: (bool value) {
+                      setState(() {
+                        _isMedicationShortTerm = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 16
+              ),
+              _isMedicationShortTerm ?
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Take Medicine untill', style: TextStyle(fontSize: 20)),
+                  MaterialButton(
+                    onPressed: _showDatePicker,
+                    child: Text(_selectedDate == null ? 'Select a Date' : '${_selectedDate?.year}-${_selectedDate?.month}-${_selectedDate?.day}', style: const TextStyle(fontSize: 20)),
+                  ),
+                ],
+              )
+              :
+              const SizedBox.shrink(),
             ],
           ),
         ),
