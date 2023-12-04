@@ -150,7 +150,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   _formKey.currentState!.save();
                   Dosage dosage = Dosage(
                     numberOfItems: int.parse(_dosage),
-                    timeOfDay: null,
+                    timeOfDay: TimeOfDay.now(),
                     timing: _dosageTime!,
                   );
                   Medication medication = Medication(
@@ -259,7 +259,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Take Medicine untill', style: TextStyle(fontSize: 20)),
+                  const Text('Take Medicine until', style: TextStyle(fontSize: 20)),
                   MaterialButton(
                     onPressed: _showDatePicker,
                     child: Text(_selectedDate == null ? 'Select a Date' : '${_selectedDate?.year}-${_selectedDate?.month}-${_selectedDate?.day}', style: const TextStyle(fontSize: 20)),
@@ -291,34 +291,41 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
   bool _isComplete = false;
   int _reminderTime = 0;
 
-  Widget _showDosageIntakes() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text('Dose 1', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextButton(
-            style: TextButton.styleFrom(
-              textStyle: const TextStyle(fontSize: 20),
-            ),
-            onPressed: () {
-              showTimePicker(
-                context: context,
-                initialTime: _timeOfDay,
-                initialEntryMode: TimePickerEntryMode.dial,
-              ).then((time) {
-                if (time != null) {
-                  setState(() {
-                    _timeOfDay = time;
-                  });
-                }
-              });
-            },
-            child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+  Column _showDosageIntakes(List<Dosage> dosages) {
+    return Column(
+      children: dosages.map((dosage) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Dose ${dosages.indexOf(dosage) + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 20),
+                  ),
+                  onPressed: () {
+                    showTimePicker(
+                      context: context,
+                      initialTime: dosage.timeOfDay,
+                      initialEntryMode: TimePickerEntryMode.dial,
+                    ).then((time) {
+                      if (time != null) {
+                        setState(() {
+                          _timeOfDay = time;
+                        });
+                      }
+                    });
+                  },
+                  child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
@@ -419,7 +426,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                       children: [
                         Text(medication.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         medication.duration == -1 ?
-                        Text('Take ${medication.type.name}, ${medication.}', style: const TextStyle(fontSize: 16, color: Colors.grey))
+                        Text('Take ${medication.type.name}', style: const TextStyle(fontSize: 16, color: Colors.grey))
                         :
                         Text('Take ${medication.type.name}, ${medication.duration} days left', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                       ],
@@ -429,7 +436,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                 const SizedBox(
                   height: 16
                 ),
-                _showDosageIntakes(),
+                _showDosageIntakes(medication.dosages),
                 IconButton(
                   icon: const Icon(Icons.add),
                   tooltip: 'Add',
@@ -437,7 +444,15 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                   style: ButtonStyle(
                     backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      medication.dosages.add(Dosage(
+                        numberOfItems: medication.dosages[0].numberOfItems,
+                        timeOfDay: TimeOfDay.now(),
+                        timing: DosageTiming.whenever,
+                      ));
+                    });
+                  },
                 ),
                 const SizedBox(
                   height: 16
