@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'package:medi_minder/pages/changepassword.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -87,6 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 ListTile(
                   title: Text('Weight:'),
+                  title: Text('email: ...'),
                 ),
               ],
             ),
@@ -105,6 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ChangePasswordPage(loggedUser: loggedUser),
+                              builder: (context) => ChangePasswordPage(),
                             ));
                       }, style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
