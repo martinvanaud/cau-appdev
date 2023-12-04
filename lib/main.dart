@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pages/ChangePasswordPage.dart';
 
 import 'firebase_options.dart';
 
@@ -104,4 +105,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
