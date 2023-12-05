@@ -136,7 +136,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
-        )
+        ),
       ),
       floatingActionButtonLocation:
         FloatingActionButtonLocation.centerFloat,
@@ -173,7 +173,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                     settings: RouteSettings(
                       arguments: medication,
                     ),
-                  )
+                  ),
                 );
               }
             });
@@ -241,9 +241,8 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                 },
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               _getDosageTimeButtons(),
-              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -260,7 +259,6 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
               _isMedicationShortTerm ?
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -371,7 +369,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
             foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
             backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
           ),
-          child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          child: const Center(child: Text('Add New Medication', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
         ),
       ),
       body: Padding(
@@ -407,7 +405,6 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
             Container(
               constraints: const BoxConstraints(maxHeight: 200),
               child: Expanded(
@@ -453,13 +450,12 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Add',
               iconSize: 25,
               style: ButtonStyle(
-                backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
+                backgroundColor: MaterialStateProperty.all(Color(greyLight)),
               ),
               onPressed: () {
                 setState(() {
