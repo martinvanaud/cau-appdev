@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^2.0.5
+  path_provider: ^2.0.10
   table_calendar: ^3.0.1
 
 
@@ -73,6 +73,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/get-vaccinated.png
+    - assets/welcome.png
     - assets/medication/ampoule.png
     - assets/medication/cachet.png
     - assets/medication/pill.png

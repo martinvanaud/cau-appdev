@@ -15,6 +15,7 @@ import 'package:medi_minder/pages/login.dart';
 import 'package:medi_minder/pages/home.dart';
 import 'package:medi_minder/pages/journal.dart';
 import 'package:medi_minder/pages/profile.dart';
+import 'package:medi_minder/pages/welcome.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasData) {
             return const MyHomePage();
           } else {
-            return const LoginPage();
+            return const WelcomePage();
           }
         },
       ),

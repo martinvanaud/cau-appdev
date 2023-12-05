@@ -39,6 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
             color: Colors.black,
             fontSize: 30,
           ),),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(onPressed: (){
             FirebaseAuth.instance.signOut();
