@@ -1,5 +1,6 @@
 enum DosageTiming {
+  whenever,
   beforeMeal,
-  afterMeal,
-  whenever
+  duringMeal,
+  afterMeal
 }

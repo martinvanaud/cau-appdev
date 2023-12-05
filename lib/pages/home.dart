@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:medi_minder/entity/schedule.dart';
+import 'package:medi_minder/pages/addmedication.dart';
 
 // Provider
 import 'package:provider/provider.dart';
@@ -57,7 +57,7 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 15.0, right: 10.0),
         child: FloatingActionButton(
           onPressed: () {
-            // TODO: Add the action here
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AddMedicationPage()));
           },
           backgroundColor: Colors.blue.shade800,
           shape: const CircleBorder(),
@@ -320,7 +320,7 @@ class MedicationSchedule extends StatelessWidget {
     List<Medication> medications =
         context.watch<MedicationProvider>().medications;
 
-    var groupedMedications = groupBy<Medication, Schedule>(
+    var groupedMedications = groupBy<Medication, TimeOfDay>(
       medications,
       (med) => med.dosages.map((dosage) => dosage.timeOfDay).reduce((a, b) =>
           a.hour == b.hour

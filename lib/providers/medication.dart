@@ -5,7 +5,6 @@ import 'package:medi_minder/enums/medication.dart';
 
 import 'package:medi_minder/entity/dosage.dart';
 import 'package:medi_minder/entity/medication.dart';
-import 'package:medi_minder/entity/schedule.dart';
 
 class MedicationProvider with ChangeNotifier {
   List<Medication> _medications = [];
@@ -23,7 +22,7 @@ class MedicationProvider with ChangeNotifier {
         name: 'Aspirin',
         duration: 7,
         dosages: [
-          Dosage(numberOfItems: 1, timeOfDay: Schedule(hour: 8, minute: 00) , timing: DosageTiming.afterMeal),
+          Dosage(numberOfItems: 1, timeOfDay: const TimeOfDay(hour: 8, minute: 00) , timing: DosageTiming.afterMeal),
         ],
         notificationsEnabled: true,
       ),
@@ -32,7 +31,7 @@ class MedicationProvider with ChangeNotifier {
         name: 'Comlivit',
         duration: 7,
         dosages: [
-          Dosage(numberOfItems: 1, timeOfDay: Schedule(hour: 8, minute: 00) , timing: DosageTiming.afterMeal),
+          Dosage(numberOfItems: 1, timeOfDay: const TimeOfDay(hour: 8, minute: 00) , timing: DosageTiming.afterMeal),
         ],
         notificationsEnabled: true,
       ),
@@ -41,7 +40,7 @@ class MedicationProvider with ChangeNotifier {
         name: '5-HTP',
         duration: 2,
         dosages: [
-          Dosage(numberOfItems: 1, timeOfDay: Schedule(hour: 8, minute: 30) , timing: DosageTiming.whenever),
+          Dosage(numberOfItems: 1, timeOfDay: const TimeOfDay(hour: 8, minute: 30) , timing: DosageTiming.whenever),
         ],
         notificationsEnabled: true,
       ),

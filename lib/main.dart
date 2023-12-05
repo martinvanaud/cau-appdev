@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'pages/ChangePasswordPage.dart';
-
 import 'firebase_options.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -44,7 +43,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MediMinder',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
       home: StreamBuilder(
