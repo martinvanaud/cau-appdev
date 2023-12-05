@@ -3,7 +3,7 @@ import 'package:medi_minder/enums/dosage.dart';
 
 class Dosage {
   final int numberOfItems;
-  final TimeOfDay timeOfDay;
+  TimeOfDay timeOfDay;
   final DosageTiming timing;
 
   Dosage({

@@ -13,7 +13,9 @@ import 'package:medi_minder/enums/dosage.dart';
 import 'package:medi_minder/enums/medication.dart';
 
 // Pages
-import 'home.dart';
+import '../main.dart';
+
+const greyLight = 0xFFF4F4F5;
 
 class AddMedicationPage extends StatefulWidget {
   const AddMedicationPage({super.key});
@@ -24,7 +26,6 @@ class AddMedicationPage extends StatefulWidget {
 
 class _AddMedicationPageState extends State<AddMedicationPage> {
   final _formKey = GlobalKey<FormState>();
-  final greyLight = 0xFFF4F4F5;
   DosageTiming? _dosageTime;
   MedicationType? _medicationType;
   String _medicineName = '';
@@ -49,7 +50,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             },
             style: ButtonStyle(
               foregroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Colors.black : Colors.grey),
-              backgroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? Color(greyLight) : Colors.white),
+              backgroundColor: MaterialStateProperty.all<Color>(_dosageTime == dosageTime ? const Color(greyLight) : Colors.white),
             ),
             child: Text(_getDosageTimeText(dosageTime), style: TextStyle(fontSize: 20,fontWeight: _dosageTime == dosageTime ? FontWeight.bold : FontWeight.normal))),
           );
@@ -79,7 +80,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         padding: const EdgeInsets.only(left: 8.0, right: 8.0),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Color(greyLight),
+            color: const Color(greyLight),
             borderRadius: BorderRadius.circular(100.0),
           ),
           child: IconButton(
@@ -93,7 +94,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               });
             },
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(_medicationType == medicationType ? const Color(0xFFD9D9D9) : Color(greyLight)),
+              backgroundColor: MaterialStateProperty.all<Color>(_medicationType == medicationType ? const Color(0xFFD9D9D9) : const Color(greyLight)),
             ),
           ),
         ),
@@ -250,7 +251,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   Switch(
                     value: _isMedicationShortTerm,
                     inactiveThumbColor: Colors.white,
-                    inactiveTrackColor: Color(greyLight),
+                    inactiveTrackColor: const Color(greyLight),
                     onChanged: (bool value) {
                       setState(() {
                         _isMedicationShortTerm = value;
@@ -289,8 +290,6 @@ class AddMedicationSchedulePage extends StatefulWidget {
 
 class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
   final _firestore = FirebaseFirestore.instance;
-  final greyLight = 0xFFF4F4F5;
-  TimeOfDay _timeOfDay = TimeOfDay.now();
   bool _addReminder = false;
   List<Dosage> _dosagesList = [];
 
@@ -339,7 +338,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: 'Close',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyHomePage())),
           ),
         ],
         leading: IconButton(
@@ -363,7 +362,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
               notificationsEnabled: _addReminder
             );
             _saveMedication(finalMedication);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyHomePage()));
           },
           style: ButtonStyle(
             foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -386,7 +385,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                   width: 4,
                   height: 60,
                   child: Container(
-                    color: Color(greyLight),
+                    color: const Color(greyLight),
                   ),
                 ),
                 Image.asset(
@@ -430,12 +429,12 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                                 ).then((time) {
                                   if (time != null) {
                                     setState(() {
-                                      _timeOfDay = time;
+                                      _dosagesList[i].timeOfDay = time;
                                     });
                                   }
                                 });
                               },
-                              child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+                              child: Text('${_dosagesList[i].timeOfDay.hour.toString().padLeft(2, '0')}:${_dosagesList[i].timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -455,7 +454,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
               tooltip: 'Add',
               iconSize: 25,
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Color(greyLight)),
+                backgroundColor: MaterialStateProperty.all(const Color(greyLight)),
               ),
               onPressed: () {
                 setState(() {
@@ -476,7 +475,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                 Switch(
                   value: _addReminder,
                   inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: Color(greyLight),
+                  inactiveTrackColor: const Color(greyLight),
                   onChanged: (bool value) {
                     setState(() {
                       _addReminder = value;
