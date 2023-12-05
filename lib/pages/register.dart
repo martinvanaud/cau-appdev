@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../main.dart';
 
@@ -32,6 +33,7 @@ class RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<RegisterForm> {
   final _authentication = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
@@ -125,19 +127,28 @@ class _RegisterFormState extends State<RegisterForm> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final currentUser = await _authentication.createUserWithEmailAndPassword(
+                  try {
+                    final newUser =
+                        await _authentication.createUserWithEmailAndPassword(
                       email: email,
                       password: password,
                     );
 
-                    if (currentUser.user != null) {
+                    if (newUser != null) {
+                      // After successful registration, add user data to Firestore
+                      await _addUserDataToFirestore(newUser.user!.uid);
+
                       _formKey.currentState!.reset();
                     }
-
-                    if (!mounted) return;
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const MyHomePage()));
+                  } catch (e) {
+                    // Handle registration errors
+                    print('Error during registration: $e');
                   }
+                  if (!mounted) return;
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MyHomePage()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1F41BB),
@@ -161,7 +172,10 @@ class _RegisterFormState extends State<RegisterForm> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text('Already have an account', style: TextStyle(color: Color(0xFF1F41BB)),),
+                    child: const Text(
+                      'Already have an account',
+                      style: TextStyle(color: Color(0xFF1F41BB)),
+                    ),
                   ),
                 ],
               ),
@@ -170,5 +184,27 @@ class _RegisterFormState extends State<RegisterForm> {
         ),
       ),
     );
+  }
+
+  Future<void> _addUserDataToFirestore(String userId) async {
+    try {
+      final CollectionReference usersCollection =
+          _firestore.collection('users');
+
+      // Add a new document for the user
+      await usersCollection.doc(userId).set({
+        // Additional user data can be added here if needed
+      });
+
+      // Add subcollections for journalEntries and medications
+      await usersCollection
+          .doc(userId)
+          .collection('journalEntries')
+          .doc()
+          .set({});
+      await usersCollection.doc(userId).collection('medications').doc().set({});
+    } catch (e) {
+      print('Error adding user data to Firestore: $e');
+    }
   }
 }

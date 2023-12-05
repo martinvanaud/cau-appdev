@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'ChangePasswordPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-import 'package:medi_minder/pages/changepassword.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -33,7 +34,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Page'),
+        title: const Text('Profile Page',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+          ),),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(onPressed: (){
             FirebaseAuth.instance.signOut();
@@ -70,13 +76,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),),
               children: [
                 ListTile(
-                  title: Text('Name: ...'),
+                  title: Text('Username: ...'),
                 ),
                 ListTile(
                   title: Text('Age: ...'),
                 ),
                 ListTile(
-                  title: Text('email: ...'),
+                  title: Text("email: ..."),
+                ),
+                ListTile(
+                  title: Text('Height: ...'),
+                ),
+                ListTile(
+                  title: Text('Weight:'),
                 ),
               ],
             ),
@@ -94,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChangePasswordPage(),
+                              builder: (context) => ChangePasswordPage(loggedUser: loggedUser),
                             ));
                       }, style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
