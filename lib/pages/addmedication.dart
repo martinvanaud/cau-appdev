@@ -17,6 +17,21 @@ import '../main.dart';
 
 const greyLight = 0xFFF4F4F5;
 
+String _getDosageTimeText(DosageTiming dosageTime) {
+  switch (dosageTime) {
+    case DosageTiming.beforeMeal:
+      return 'Before Meal';
+    case DosageTiming.duringMeal:
+      return 'During Meal';
+    case DosageTiming.afterMeal:
+      return 'After Meal';
+    case DosageTiming.whenever:
+      return 'Whenever';
+    default:
+      return '';
+  }
+}
+
 class AddMedicationPage extends StatefulWidget {
   const AddMedicationPage({super.key});
 
@@ -57,21 +72,6 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         }).toList(),
       ),
     );
-  }
-
-  String _getDosageTimeText(DosageTiming dosageTime) {
-    switch (dosageTime) {
-      case DosageTiming.beforeMeal:
-        return 'Before Meals';
-      case DosageTiming.duringMeal:
-        return 'During Meals';
-      case DosageTiming.afterMeal:
-        return 'After Meals';
-      case DosageTiming.whenever:
-        return 'Whenever';
-      default:
-        return '';
-    }
   }
 
   List<Widget> _getMedicationTypeButtons() {
@@ -417,6 +417,24 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Dose ${i + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            SizedBox(
+                              width: 150,
+                              child: DropdownButton(
+                                value: _dosagesList[i].timing,
+                                items: DosageTiming.values.map((DosageTiming dosageTime) {
+                                  return DropdownMenuItem(
+                                    value: dosageTime,
+                                    child: Text(_getDosageTimeText(dosageTime), style: const TextStyle(fontSize: 20)),
+                                  );
+                                }).toList(),
+                                onChanged: (DosageTiming? value) {
+                                  setState(() {
+                                    _dosagesList[i].timing = value!;
+                                  });
+                                },
+                                underline: Container(),
+                              ),
+                            ),
                             TextButton(
                               style: TextButton.styleFrom(
                                 textStyle: const TextStyle(fontSize: 20),
