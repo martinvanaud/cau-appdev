@@ -157,6 +157,7 @@ class _JournalPageState extends State<JournalPage> with TickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         title: const Text('Health Journal', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        automaticallyImplyLeading: false,
         bottom: TabBar(
           controller: _tabController,
           tabs: [
