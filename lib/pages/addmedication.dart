@@ -243,6 +243,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               ),
               const SizedBox(height: 20),
               _getDosageTimeButtons(),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -259,17 +260,15 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 16
-              ),
+              const SizedBox(height: 16),
               _isMedicationShortTerm ?
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Take Medicine until', style: TextStyle(fontSize: 20)),
+                  const Text('Take Medicine until', style: TextStyle(fontSize: 16)),
                   MaterialButton(
                     onPressed: _showDatePicker,
-                    child: Text(_selectedDate == null ? 'Select a Date' : '${_selectedDate?.year}-${_selectedDate?.month}-${_selectedDate?.day}', style: const TextStyle(fontSize: 20)),
+                    child: Text(_selectedDate == null ? 'Select a Date' : '${_selectedDate?.year}-${_selectedDate?.month}-${_selectedDate?.day}', style: const TextStyle(fontSize: 16)),
                   ),
                 ],
               )
@@ -296,44 +295,6 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
   TimeOfDay _timeOfDay = TimeOfDay.now();
   bool _addReminder = false;
   List<Dosage> _dosagesList = [];
-
-  Column _showDosageIntakes() {
-    return Column(
-      children: _dosagesList.map((dosage) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Dose ${_dosagesList.indexOf(dosage) + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 20),
-                  ),
-                  onPressed: () {
-                    showTimePicker(
-                      context: context,
-                      initialTime: dosage.timeOfDay,
-                      initialEntryMode: TimePickerEntryMode.dial,
-                    ).then((time) {
-                      if (time != null) {
-                        setState(() {
-                          _timeOfDay = time;
-                        });
-                      }
-                    });
-                  },
-                  child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
 
   void _updateDosageList(List<Dosage> dosages) {
     setState(() {
@@ -417,78 +378,114 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const Text('2 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
+            const Text('Schedule', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Text('2 of 2', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                const Text('Schedule', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                SizedBox(
+                  width: 4,
+                  height: 60,
+                  child: Container(
+                    color: Color(greyLight),
+                  ),
+                ),
+                Image.asset(
+                  'assets/medication/${medication.type.name}.png',
+                  height: 100,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width: 4,
-                      height: 60,
-                      child: Container(
-                        color: Color(greyLight),
-                      ),
-                    ),
-                    Image.asset(
-                      'assets/medication/${medication.type.name}.png',
-                      height: 100,
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(medication.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        medication.duration == -1 ?
-                        Text(medication.type.name, style: const TextStyle(fontSize: 16, color: Colors.grey))
-                        :
-                        Text('${medication.type.name}, ${medication.duration} days left', style: const TextStyle(fontSize: 16, color: Colors.grey)),
-                      ],
-                    ),
+                    Text(medication.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    medication.duration == -1 ?
+                    Text(medication.type.name, style: const TextStyle(fontSize: 16, color: Colors.grey))
+                    :
+                    Text('${medication.type.name}, ${medication.duration} days left', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                   ],
                 ),
-                const SizedBox(
-                  height: 16
-                ),
-                _showDosageIntakes(),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  tooltip: 'Add',
-                  iconSize: 25,
-                  style: ButtonStyle(
-                    backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      medication.dosages.add(Dosage(
-                        numberOfItems: medication.dosages[0].numberOfItems,
-                        timeOfDay: TimeOfDay.now(),
-                        timing: DosageTiming.whenever,
-                      ));
-                    });
-                  },
-                ),
-                const SizedBox(
-                  height: 16
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Reminders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    Switch(
-                      value: _addReminder,
-                      inactiveThumbColor: Colors.white,
-                      inactiveTrackColor: Color(greyLight),
-                      onChanged: (bool value) {
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: Expanded(
+                child: ListView.builder(
+                  itemCount: _dosagesList.length,
+                  itemBuilder: (c, i) {
+                    return Dismissible(
+                      key: ValueKey(_dosagesList[i]),
+                      child: ListTile(
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Dose ${i + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                textStyle: const TextStyle(fontSize: 20),
+                              ),
+                              onPressed: () {
+                                showTimePicker(
+                                  context: context,
+                                  initialTime: _dosagesList[i].timeOfDay,
+                                  initialEntryMode: TimePickerEntryMode.dial,
+                                ).then((time) {
+                                  if (time != null) {
+                                    setState(() {
+                                      _timeOfDay = time;
+                                    });
+                                  }
+                                });
+                              },
+                              child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      onDismissed: (direction) {
                         setState(() {
-                          _addReminder = value;
+                          _dosagesList.removeAt(i);
                         });
                       },
-                    ),
-                  ],
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Add',
+              iconSize: 25,
+              style: ButtonStyle(
+                backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
+              ),
+              onPressed: () {
+                setState(() {
+                  medication.dosages.add(
+                    Dosage(
+                      numberOfItems: medication.dosages[0].numberOfItems,
+                      timeOfDay: TimeOfDay.now(),
+                      timing: DosageTiming.whenever,
+                    )
+                  );
+                });
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Reminders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Switch(
+                  value: _addReminder,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Color(greyLight),
+                  onChanged: (bool value) {
+                    setState(() {
+                      _addReminder = value;
+                    });
+                  },
                 ),
               ],
             ),
