@@ -13,7 +13,7 @@ import 'package:medi_minder/enums/dosage.dart';
 import 'package:medi_minder/enums/medication.dart';
 
 // Pages
-import 'home.dart';
+import '../main.dart';
 
 class AddMedicationPage extends StatefulWidget {
   const AddMedicationPage({super.key});
@@ -339,7 +339,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: 'Close',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyHomePage())),
           ),
         ],
         leading: IconButton(
@@ -363,7 +363,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
               notificationsEnabled: _addReminder
             );
             _saveMedication(finalMedication);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyHomePage()));
           },
           style: ButtonStyle(
             foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
