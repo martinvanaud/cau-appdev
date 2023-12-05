@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:medi_minder/entity/dosage.dart';
+
+// Firebase
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Entities
 import 'package:medi_minder/entity/medication.dart';
+import 'package:medi_minder/entity/dosage.dart';
 
 // Enums
 import 'package:medi_minder/enums/dosage.dart';
@@ -27,6 +31,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
   String _dosage = '';
   bool _isMedicationShortTerm = false;
   DateTime? _selectedDate;
+  int _duration = -1;
 
   Widget _getDosageTimeButtons() {
     return SingleChildScrollView(
@@ -105,14 +110,16 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
     ).then((selectedDate) {
       setState(() {
         _selectedDate = selectedDate!;
+        _getDaysBetweenDates();
       });
     });
   }
 
-  int _getDaysBetweenDates() {
-    DateTime now = DateTime.now();
-    int days = _selectedDate!.difference(now).inDays;
-    return days == 0 ? 0 : days + 1;
+  void _getDaysBetweenDates() {
+    setState(() {
+      _duration = _selectedDate!.difference(DateTime.now()).inDays;
+      _duration = _duration == 0 ? 0 : _duration + 1;
+    });
   }
 
   @override
@@ -138,45 +145,45 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
         height: 50,
         margin: const EdgeInsets.all(10),
         child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                if (_formKey.currentState!.validate() && _dosageTime != null && _medicationType != null) {
-                  if (_isMedicationShortTerm && _selectedDate == null) {
-                    return;
-                  }
-                  else if (!_isMedicationShortTerm) {
-                    _selectedDate = null;
-                  }
-                  _formKey.currentState!.save();
-                  Dosage dosage = Dosage(
-                    numberOfItems: int.parse(_dosage),
-                    timeOfDay: TimeOfDay.now(),
-                    timing: _dosageTime!,
-                  );
-                  Medication medication = Medication(
-                    name: _medicineName,
-                    type: _medicationType!,
-                    dosages: [dosage],
-                    duration: _isMedicationShortTerm ? _getDaysBetweenDates() : -1,
-                  );
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddMedicationSchedulePage(),
-                      settings: RouteSettings(
-                        arguments: medication,
-                      ),
-                    )
-                  );
+          onPressed: () {
+            setState(() {
+              if (_formKey.currentState!.validate() && _dosageTime != null && _medicationType != null) {
+                if (_isMedicationShortTerm && _selectedDate == null) {
+                  return;
                 }
-              });
-            },
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
-            ),
-            child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+                else if (!_isMedicationShortTerm) {
+                  _selectedDate = null;
+                }
+                _formKey.currentState!.save();
+                Dosage dosage = Dosage(
+                  numberOfItems: int.parse(_dosage),
+                  timeOfDay: TimeOfDay.now(),
+                  timing: _dosageTime!,
+                );
+                Medication medication = Medication(
+                  name: _medicineName,
+                  type: _medicationType!,
+                  dosages: [dosage],
+                  duration: _isMedicationShortTerm ? _duration : -1,
+                );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddMedicationSchedulePage(),
+                    settings: RouteSettings(
+                      arguments: medication,
+                    ),
+                  )
+                );
+              }
+            });
+          },
+          style: ButtonStyle(
+            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
           ),
+          child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+        ),
       ),
       body: Form(
         key:_formKey,
@@ -284,22 +291,21 @@ class AddMedicationSchedulePage extends StatefulWidget {
 }
 
 class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
+  final _firestore = FirebaseFirestore.instance;
   final greyLight = 0xFFF4F4F5;
-  final List<int> _reminderTimes = [5, 10, 30, 60, 90, 120, 180, 240];
   TimeOfDay _timeOfDay = TimeOfDay.now();
   bool _addReminder = false;
-  bool _isComplete = false;
-  int _reminderTime = 0;
+  List<Dosage> _dosagesList = [];
 
-  Column _showDosageIntakes(List<Dosage> dosages) {
+  Column _showDosageIntakes() {
     return Column(
-      children: dosages.map((dosage) {
+      children: _dosagesList.map((dosage) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Dose ${dosages.indexOf(dosage) + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Dose ${_dosagesList.indexOf(dosage) + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextButton(
@@ -329,41 +335,52 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
     );
   }
 
-  Widget _getReminderOptions() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: _reminderTimes.map((reminderTime) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _reminderTime = reminderTime;
-              });
+  void _updateDosageList(List<Dosage> dosages) {
+    setState(() {
+      _dosagesList = dosages;
+    });
+  }
+
+  Future<void> _saveMedication(Medication medication) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final userId = user.uid;
+        final CollectionReference medicationCollection = _firestore.collection('users').doc(userId).collection('Medications');
+
+        final medicationJson = {
+          'name': medication.name.toString(),
+          'type': medication.type.name,
+          'dosages': medication.dosages.map((dosage) => {
+            'numberOfItems': dosage.numberOfItems,
+            'timeOfDay': {
+              'hour' : dosage.timeOfDay.hour,
+              'minute' : dosage.timeOfDay.minute
             },
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(_reminderTime == reminderTime ? Colors.black : Colors.grey),
-              backgroundColor: MaterialStateProperty.all<Color>(_reminderTime == reminderTime ? Color(greyLight) : Colors.white),
-            ),
-            child: Text('$reminderTime min', style: TextStyle(fontSize: 20, fontWeight: _reminderTime == reminderTime ? FontWeight.bold : FontWeight.normal))),
-          );
-        }).toList(),
-      ),
-    );
+            'timing': dosage.timing.name.toString(),
+          }).toList(),
+          'duration': medication.duration,
+          'notificationsEnabled': medication.notificationsEnabled,
+        };
+        await medicationCollection.add(medicationJson);
+      }
+    } catch (e) {
+      print('Error while saving the new medication: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     Medication medication = ModalRoute.of(context)?.settings.arguments as Medication;
+    _updateDosageList(medication.dosages);
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: 'Close',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage())),
           ),
         ],
         leading: IconButton(
@@ -377,24 +394,24 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
       floatingActionButton: Container(
         height: 50,
         margin: const EdgeInsets.all(10),
-        child: !_isComplete ?
-          ElevatedButton(
-            onPressed: (){},
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-              backgroundColor:  MaterialStateProperty.all(Color(greyLight)),
-            ),
-            child: const Center(child: Text("Add medication times", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-          )
-          :
-          ElevatedButton(
-            onPressed: () {},
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
-            ),
-            child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+        child: ElevatedButton(
+          onPressed: () {
+            Medication finalMedication = Medication(
+              type: medication.type,
+              name: medication.name,
+              dosages: _dosagesList,
+              duration: medication.duration,
+              notificationsEnabled: _addReminder
+            );
+            _saveMedication(finalMedication);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
+          },
+          style: ButtonStyle(
+            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.indigo),
           ),
+          child: const Center(child: Text('Next', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -426,9 +443,9 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                       children: [
                         Text(medication.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         medication.duration == -1 ?
-                        Text('Take ${medication.type.name}', style: const TextStyle(fontSize: 16, color: Colors.grey))
+                        Text(medication.type.name, style: const TextStyle(fontSize: 16, color: Colors.grey))
                         :
-                        Text('Take ${medication.type.name}, ${medication.duration} days left', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                        Text('${medication.type.name}, ${medication.duration} days left', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                       ],
                     ),
                   ],
@@ -436,7 +453,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                 const SizedBox(
                   height: 16
                 ),
-                _showDosageIntakes(medication.dosages),
+                _showDosageIntakes(),
                 IconButton(
                   icon: const Icon(Icons.add),
                   tooltip: 'Add',
@@ -473,7 +490,6 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
                     ),
                   ],
                 ),
-                _addReminder ? _getReminderOptions() : const SizedBox.shrink(),
               ],
             ),
           ],
