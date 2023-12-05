@@ -23,7 +23,7 @@ class _WelcomePageState extends State<WelcomePage> {
               // Image widget added here
               Image.asset(
                 'assets/welcome.png', // Replace with your image path
-                height: 350,
+                height: 300,
               ),
               const Text(
                 'Manage easily',
@@ -40,7 +40,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 ),
               ),
               const SizedBox(
-                height: 20,
+                height: 10,
               ),
               const Text(
                 'Explore your calendar with all the medications',
@@ -55,7 +55,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 ),
               ),
               const SizedBox(
-                height: 50,
+                height: 10,
               ),
               ElevatedButton(
                 onPressed: () async {
