@@ -88,7 +88,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 ListTile(
                   title: Text('Weight:'),
-                  title: Text('email: ...'),
                 ),
               ],
             ),
