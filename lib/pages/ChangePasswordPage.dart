@@ -62,7 +62,6 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
               ElevatedButton(onPressed: (
                   ) async {
                 if ((password.isNotEmpty && confirmPassword.isNotEmpty) && (password == confirmPassword)) {
-                  print(confirmPassword);
                   await widget.loggedUser?.updatePassword(password);
                   Navigator.popUntil(context, (route) => route.isFirst);
                 }

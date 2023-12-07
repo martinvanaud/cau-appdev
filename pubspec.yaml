@@ -78,6 +78,7 @@ flutter:
     - assets/medication/cachet.png
     - assets/medication/pill.png
     - assets/medication/respirator.png
+    - assets/profile_default.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
