@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'addPersonalInformation.dart';
 
 import '../main.dart';
 
@@ -148,7 +149,7 @@ class _RegisterFormState extends State<RegisterForm> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const MyHomePage()));
+                          builder: (context) => const addPersonalInformationPage()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1F41BB),

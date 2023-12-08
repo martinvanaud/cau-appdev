@@ -1,9 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'ChangePasswordPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,11 +15,16 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final _authentication = FirebaseAuth.instance;
   User? loggedUser;
+  String _username = "";
+  String _age = "";
+  String _height = "";
+  String _weight = "";
 
   @override
   void initState() {
     super.initState();
     getCurrentUser();
+    fetchProfileData();
   }
 
   void getCurrentUser() {
@@ -30,15 +35,29 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> fetchProfileData() async {
+    DocumentSnapshot profileSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(loggedUser!.uid)
+        .get();
+
+    Map<String, dynamic>? data = profileSnapshot.data() as Map<String, dynamic>?;
+
+    if (data != null) {
+      setState(() {
+        _username = data['username'] ?? '';
+        _age = data['age'] ?? '';
+        _height = data['height'] ?? '';
+        _weight = data['weight'] ?? '';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Page',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 30,
-          ),),
+        title: const Text('Profile Page', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(onPressed: (){
@@ -51,51 +70,54 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Container(
               padding: const EdgeInsets.all(16.0),
-              child: const Column(
+              child: Column(
                 children: [
-                  SizedBox(height: 30.0),
-                  CircleAvatar(
+                  const SizedBox(height: 30.0),
+                  const CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage(''),
+                    backgroundImage: AssetImage('assets/profile_default.png'),
                   ),
-                  SizedBox(height: 30.0),
+                  const SizedBox(height: 30.0),
                   Text(
-                    'firebase username',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                    ),
+                    _username, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)
                   ),
                 ],
               ),
             ),
-            const ExpansionTile(
-              title: Text('Profile informations',
+            const SizedBox(
+              height: 30,
+            ),
+            ExpansionTile(
+              title: const Text('Profile informations',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Color(0xFF1F41BB),
                   fontSize: 30,
                 ),),
               children: [
                 ListTile(
-                  title: Text('Username: ...'),
+                  title: Text('Username: $_username'),
                 ),
                 ListTile(
-                  title: Text('Age: ...'),
+                  title: Text('Age: $_age'),
                 ),
                 ListTile(
-                  title: Text("email: ..."),
+                  title: Text("email: ${loggedUser!.email!}"),
                 ),
                 ListTile(
-                  title: Text('Height: ...'),
+                  title: Text('Height: $_height'),
                 ),
                 ListTile(
-                  title: Text('Weight:'),
+                  title: Text('Weight: $_weight'),
                 ),
               ],
+            ),
+            const SizedBox(
+              height: 40,
             ),
             ExpansionTile(
               title: const Text('Settings',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Color(0xFF1F41BB),
                   fontSize: 30,
                 ),),
               children: [
