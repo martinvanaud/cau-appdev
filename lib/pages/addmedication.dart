@@ -85,7 +85,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
           child: IconButton(
             icon: Image.asset(
               'assets/medication/${medicationType.name}.png',
-              height: 60
+              height: 52
             ),
             onPressed: () {
               setState(() {
@@ -160,8 +160,9 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   timeOfDay: TimeOfDay.now(),
                   timing: _dosageTime!,
                 );
+                final user = FirebaseAuth.instance.currentUser;
                 Medication medication = Medication(
-                  id: "zrezr", // TODO: put the user id from _auth
+                  id: user!.uid,
                   name: _medicineName,
                   type: _medicationType!,
                   dosages: [dosage],
@@ -307,7 +308,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
 
       if (user != null) {
         final userId = user.uid;
-        final CollectionReference medicationCollection = _firestore.collection('users').doc(userId).collection('Medications');
+        final CollectionReference medicationCollection = _firestore.collection('users').doc(userId).collection('medications');
 
         final medicationJson = {
           'name': medication.name.toString(),
@@ -356,8 +357,9 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
         margin: const EdgeInsets.all(10),
         child: ElevatedButton(
           onPressed: () {
+            final user = FirebaseAuth.instance.currentUser;
             Medication finalMedication = Medication(
-              id: "zrezr", // TODO: put the user id from _auth
+                id: user!.uid,
               type: medication.type,
               name: medication.name,
               dosages: _dosagesList,

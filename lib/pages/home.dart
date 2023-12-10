@@ -30,9 +30,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-
   late Stream<Profile?> getUserProfileFuture;
 
   @override
@@ -52,7 +49,7 @@ class _HomePageState extends State<HomePage> {
               stream: getUserProfileStream(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text(
                       'Error: ${snapshot.error}'); // Handle error scenario
@@ -62,17 +59,17 @@ class _HomePageState extends State<HomePage> {
                   return Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: HomeHeader(
                             name: userProfile?.username ??
                                 'User'), // Use null-aware operator
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: MedicationPlanProgress(percentage: 73),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: MedicationPlanProgress(percentage: 5),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
                         child: GetVaccinated(),
                       ),
                       Expanded(
@@ -156,8 +153,48 @@ class MedicationPlanProgress extends StatefulWidget {
 }
 
 class _MedicationPlanProgressState extends State<MedicationPlanProgress> {
+  Color _getColorForPercentage(int percentage) {
+    if (percentage <= 0) {
+      return Colors.red;
+    } else if (percentage <= 25) {
+      return Colors.orange;
+    } else if (percentage <= 50) {
+      return Colors.yellow;
+    } else {
+      return Colors.green;
+    }
+  }
+
+  Color _getColorForPercentageBackground(int percentage) {
+    if (percentage <= 0) {
+      return Colors.red.shade100;
+    } else if (percentage <= 25) {
+      return Colors.orange.shade100;
+    } else if (percentage <= 50) {
+      return Colors.yellow.shade100;
+    } else {
+      return Colors.green.shade100;
+    }
+  }
+
+  String _getMessageForPercentage(int percentage) {
+    if (percentage <= 0) {
+      return 'Your plan hasn\'t started yet.\nAdd some medication.';
+    } else if (percentage < 20) {
+      return 'Keep going, your plan is progressing day by day';
+    }  else if (percentage < 100) {
+      return 'Your plan is\nalmost done!';
+    } else {
+      return 'Congratulations!\nYou\'ve completed your plan.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Color progressColor = _getColorForPercentage(widget.percentage);
+    Color progressColorBackground = _getColorForPercentageBackground(widget.percentage);
+    String progressMessage = _getMessageForPercentage(widget.percentage);
+
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 150,
@@ -174,44 +211,35 @@ class _MedicationPlanProgressState extends State<MedicationPlanProgress> {
             top: 10,
             child: CustomPaint(
               foregroundPainter:
-                  CircleProgressPainter(percentage: widget.percentage),
+                  CircleProgressPainter(percentage: widget.percentage, color: progressColor, backgroundColor: progressColorBackground),
               child: Container(
                 width: 80,
                 height: 75 + 50,
                 child: Center(
                     child: Text(
                   '${widget.percentage}%',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: Colors.green,
+                    color: progressColor,
                   ),
                 )),
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             left: 20,
-            top: 10,
+            top: 30,
+            width: MediaQuery.of(context).size.width * 0.55, // 80% of the screen width
             child: Text(
-              'Your plan is\nalmost done!',
-              style: TextStyle(
+              progressMessage,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 26,
+                fontSize: 18,
                 color: Colors.black,
               ),
-            ),
-          ),
-          const Positioned(
-            left: 20,
-            bottom: 10,
-            child: Text(
-              '13% than week ago',
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+              softWrap: true, // Wrap the text onto multiple lines
+              overflow: TextOverflow.clip, // Clip the overflowing text
             ),
           ),
         ],
@@ -222,19 +250,21 @@ class _MedicationPlanProgressState extends State<MedicationPlanProgress> {
 
 class CircleProgressPainter extends CustomPainter {
   int percentage;
+  Color color;
+  Color backgroundColor;
 
-  CircleProgressPainter({required this.percentage});
+  CircleProgressPainter({required this.percentage, required this.color, required this.backgroundColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     Paint greyPaint = Paint()
       ..strokeWidth = 11
-      ..color = Colors.green.shade100
+      ..color = backgroundColor
       ..style = PaintingStyle.stroke;
 
     Paint progressPaint = Paint()
       ..strokeWidth = 11
-      ..color = Colors.green
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -363,75 +393,10 @@ class MedicationSchedule extends StatelessWidget {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
           List<Medication> medications = snapshot.data!;
-          return ListView.builder(
-            itemCount: medications.length,
-            itemBuilder: (context, index) {
-              Medication medication = medications[index];
-              return Dismissible(
-                key: Key(medication.id),
-                onDismissed: (direction) {
-                  _medicationProvider.removeUserMedication(user.uid, medication.id);
-                },
-                background: Container(
-                  color: Colors.white,
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 20),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Icon(Icons.check, color: Colors.black),
-                  ),
-                ),
-                secondaryBackground: Container(
-                  color: Colors.white,
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 20),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Icon(Icons.check, color: Colors.black),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: MedicationCard(
-                    imagePath: 'assets/medication/${medication.type.name}.png',
-                    title: medication.name,
-                      subtitle: ''
-                          '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
-                          '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals")}'
-                          'for ${medication.duration} ${(medication.duration > 1 ? "days" : "day")}',
-                  ),
-                ),
-              );
+          List<Widget> medicationListItems = _buildMedicationListWithHeaders(medications);
 
-              // return Dismissible(
-              //   key: Key(medication.id),
-              //   onDismissed: (direction) {
-              //     _medicationProvider.removeUserMedication(user.uid, medication.id);
-              //   },
-              //   background: Container(color: Colors.red),
-              //   child: Padding(
-              //     padding: const EdgeInsets.only(bottom: 8.0),
-              //     child: MedicationCard(
-              //       imagePath: 'assets/medication/${medication.type.name}.png',
-              //       title: medication.name,
-              //       subtitle: ''
-              //         '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
-              //         '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals ")}'
-              //         'for ${medication.duration} ${(medication.duration > 1 ? "days" : "day")}',
-              //     ),
-              //   ),
-              // );
-            },
+          return ListView(
+            children: medicationListItems,
           );
         } else {
           return const Text('No medications found');
@@ -441,49 +406,46 @@ class MedicationSchedule extends StatelessWidget {
   }
 }
 
-// class MedicationSchedule extends StatelessWidget {
-//   MedicationSchedule({super.key});
-//
-//   final _auth = FirebaseAuth.instance;
-//   final MedicationProvider _medicationProvider = MedicationProvider();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     User? user = _auth.currentUser;
-//     if (user == null) {
-//       return const Text('User not authenticated');
-//     }
-//
-//     return StreamBuilder<List<Medication>>(
-//       stream: _medicationProvider.getUserMedicationsStream(user.uid),
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return const CircularProgressIndicator();
-//         } else if (snapshot.hasError) {
-//           return Text('Error: ${snapshot.error}');
-//         } else if (snapshot.hasData) {
-//           List<Medication> medications = snapshot.data!;
-//           return ListView.builder(
-//             itemCount: medications.length,
-//             itemBuilder: (context, index) {
-//               Medication medication = medications[index];
-//               return Padding(
-//                 padding: const EdgeInsets.only(bottom: 8.0), // Adjust the padding as needed
-//                 child: MedicationCard(
-//                   imagePath: 'assets/medication/${medication.type.name}.png',
-//                   title: medication.name,
-//                   subtitle: ''
-//                       '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
-//                       '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals ")}'
-//                       'for ${medication.duration} ${(medication.duration > 1 ? "days" : "day")}',
-//                 ),
-//               );
-//             },
-//           );
-//         } else {
-//           return const Text('No medications found');
-//         }
-//       },
-//     );
-//   }
-// }
+int timeOfDayToMinutes(TimeOfDay tod) => tod.hour * 60 + tod.minute;
+
+List<Widget> _buildMedicationListWithHeaders(List<Medication> medications) {
+  // Sort medications by time first
+  medications.sort((a, b) => timeOfDayToMinutes(a.dosages[0].timeOfDay).compareTo(timeOfDayToMinutes(b.dosages[0].timeOfDay)));
+
+  // Group medications by timeOfDay
+  var groupedByTime = groupBy(medications, (Medication m) => m.dosages[0].timeOfDay);
+
+  List<Widget> listItems = [];
+  groupedByTime.forEach((timeOfDay, medsAtSameTime) {
+    // Add time header
+    listItems.add(
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "${timeOfDay.hour.toString().padLeft(2, '0')}:${timeOfDay.minute.toString().padLeft(2, '0')}",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+        ),
+      ),
+    );
+
+    // Add medication cards
+    listItems.addAll(medsAtSameTime.map((medication) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: MedicationCard(
+          imagePath: 'assets/medication/${medication.type.name}.png',
+          title: medication.name,
+          subtitle: ''
+              '${medication.dosages[0].numberOfItems} ${(medication.dosages[0].numberOfItems > 1 ? '${medication.type.name}s' : medication.type.name)} '
+              '${(medication.dosages[0].timing.name == 'whenever' ? '' : medication.dosages[0].timing.name == 'afterMeal' ? "after meals " : "before meals ")}'
+              '${(medication.duration <= 0 ? "today" : medication.duration > 1 ? "for ${medication.duration} days" : "for ${medication.duration} day")}',
+        ),
+      );
+    }).toList());
+  });
+
+  return listItems;
+}

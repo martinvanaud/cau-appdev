@@ -26,7 +26,6 @@ class Profile {
 }
 
 Stream<Profile?> getUserProfileStream() {
-  print("fetching the user profile");
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     return FirebaseFirestore.instance

@@ -27,8 +27,8 @@ class Dosage {
     return Dosage(
       numberOfItems: map['numberOfItems'] is int ? map['numberOfItems'] : int.parse(map['numberOfItems'].toString()),
       timeOfDay: TimeOfDay(
-          hour: int.parse(map['timeOfDay']['hour']),
-          minute: int.parse(map['timeOfDay']['minute'])
+          hour: map['timeOfDay']['hour'],
+          minute: map['timeOfDay']['minute']
       ),
       timing: DosageTiming.values.firstWhere((e) => e.toString() == 'DosageTiming.${map['timing']}'),
     );
