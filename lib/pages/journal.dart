@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:medi_minder/entity/journalentry.dart';
 import 'package:medi_minder/enums/mood.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class JournalPage extends StatefulWidget {
   @override
@@ -12,6 +14,7 @@ class JournalPage extends StatefulWidget {
 }
 
 class _JournalPageState extends State<JournalPage> with TickerProviderStateMixin {
+  final _firestore = FirebaseFirestore.instance;
   late TabController _tabController;
   late DateTime _selectedDate;
   Map<DateTime, List<dynamic>> _events = {};
@@ -34,23 +37,44 @@ class _JournalPageState extends State<JournalPage> with TickerProviderStateMixin
 
   Future<void> _loadJournalEntries() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/journal_entries.txt');
+      User? user = FirebaseAuth.instance.currentUser;
 
-      if (file.existsSync()) {
-        final contents = await file.readAsString();
+      if (user != null) {
+        final userId = user.uid;
+        final querySnapshot = await _firestore.collection('users').doc(userId).collection('journalEntries').get();
 
-        if (contents.isNotEmpty) {
-          final List<dynamic> jsonList = jsonDecode(contents);
-
+        if (querySnapshot.docs.isNotEmpty) {
           setState(() {
-            journalEntries = jsonList.map((entry) => JournalEntry.fromJson(entry)).toList();
+            journalEntries = querySnapshot.docs.map((doc) => JournalEntry.fromJson(doc.data() as Map<String, dynamic>)).toList();
             _events = _groupEventsByDate(journalEntries);
           });
         }
       }
     } catch (e) {
       _printError('Error loading journal entries: $e');
+    }
+  }
+
+  Future<void> _saveJournalEntries() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final userId = user.uid;
+        final CollectionReference journalCollection = _firestore.collection('users').doc(userId).collection('journalEntries');
+
+        final jsonList = journalEntries.map((entry) => entry.toJson()).toList();
+
+        for (var entry in jsonList) {
+          await journalCollection.add(entry);
+        }
+
+        setState(() {
+          _events = _groupEventsByDate(journalEntries);
+        });
+      }
+    } catch (e) {
+      _printError('Error saving journal entries: $e');
     }
   }
 
@@ -67,23 +91,6 @@ class _JournalPageState extends State<JournalPage> with TickerProviderStateMixin
     return events;
   }
 
-  Future<void> _saveJournalEntries() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/journal_entries.txt');
-
-      final jsonList = journalEntries.map((entry) => entry.toJson()).toList();
-      final jsonString = jsonEncode(jsonList);
-
-      await file.writeAsString(jsonString);
-
-      setState(() {
-        _events = _groupEventsByDate(journalEntries);
-      });
-    } catch (e) {
-      _printError('Error saving journal entries: $e');
-    }
-  }
 
   bool _hasJournalForToday() {
     final today = DateTime.now().toString().substring(0, 10);
@@ -150,6 +157,7 @@ class _JournalPageState extends State<JournalPage> with TickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         title: const Text('Health Journal', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        automaticallyImplyLeading: false,
         bottom: TabBar(
           controller: _tabController,
           tabs: [

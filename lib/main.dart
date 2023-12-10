@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'pages/ChangePasswordPage.dart';
 import 'firebase_options.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -14,6 +14,7 @@ import 'package:medi_minder/pages/login.dart';
 import 'package:medi_minder/pages/home.dart';
 import 'package:medi_minder/pages/journal.dart';
 import 'package:medi_minder/pages/profile.dart';
+import 'package:medi_minder/pages/welcome.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MediMinder',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
       home: StreamBuilder(
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasData) {
             return const MyHomePage();
           } else {
-            return const LoginPage();
+            return const WelcomePage();
           }
         },
       ),
@@ -95,4 +96,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-

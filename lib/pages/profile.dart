@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'ChangePasswordPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,11 +27,30 @@ class _ProfilePageState extends State<ProfilePage> {
     getUserProfileFuture = getUserProfileStream();
   }
 
+  Future<void> fetchProfileData() async {
+    DocumentSnapshot profileSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(loggedUser!.uid)
+        .get();
+
+    Map<String, dynamic>? data = profileSnapshot.data() as Map<String, dynamic>?;
+
+    if (data != null) {
+      setState(() {
+        _username = data['username'] ?? '';
+        _age = data['age'] ?? '';
+        _height = data['height'] ?? '';
+        _weight = data['weight'] ?? '';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Page'),
+        title: const Text('Profile Page', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             onPressed: () {

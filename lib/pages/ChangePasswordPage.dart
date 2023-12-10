@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class ChangePasswordPage extends StatelessWidget {
-  const ChangePasswordPage({super.key});
+  const ChangePasswordPage({super.key, this.loggedUser});
+  final User? loggedUser;
 
   @override
   Widget build(BuildContext context) {
@@ -9,14 +12,15 @@ class ChangePasswordPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Change Password"),
       ),
-      body: const ChangePasswordForm(),
+      body: ChangePasswordForm(loggedUser: loggedUser),
     );
   }
 }
 
 
 class ChangePasswordForm extends StatefulWidget {
-  const ChangePasswordForm({super.key});
+  const ChangePasswordForm({super.key, this.loggedUser});
+  final User?  loggedUser;
 
   @override
   State<ChangePasswordForm> createState() => _ChangePasswordFormState();
@@ -36,6 +40,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
           child: ListView(
             children: [
               TextFormField(
+                obscureText: true,
                 decoration: const InputDecoration(
                     labelText: 'new password'
                 ),
@@ -45,17 +50,19 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
               ),
               const SizedBox(height: 30,),
               TextFormField(
+                obscureText: true,
                 decoration: const InputDecoration(
                     labelText: 'confim password'
                 ),
                 onChanged: (value) {
-                  password = value;
+                  confirmPassword = value;
                 },
               ),
               const SizedBox(height: 30,),
               ElevatedButton(onPressed: (
-                  ) {
-                if (password == confirmPassword) {
+                  ) async {
+                if ((password.isNotEmpty && confirmPassword.isNotEmpty) && (password == confirmPassword)) {
+                  await widget.loggedUser?.updatePassword(password);
                   Navigator.popUntil(context, (route) => route.isFirst);
                 }
               }, style: ElevatedButton.styleFrom(

@@ -1,7 +1,9 @@
 import 'dart:js_util';
 
 import 'package:flutter/material.dart';
+
 import 'package:medi_minder/entity/profile.dart';
+import 'package:medi_minder/pages/addmedication.dart';
 
 // Provider
 import 'package:medi_minder/providers/medication.dart';
@@ -87,35 +89,8 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 15.0, right: 10.0),
         child: FloatingActionButton(
-          onPressed: () async {
-            User? user = _auth.currentUser;
-            if (user != null) {
-              // Here we have the UID, which we can use as the document ID
-              String uid = user.uid;
-
-              // Reference to the user's document in the 'medication' collection
-              DocumentReference userDoc =
-                  _firestore.collection('users').doc(uid);
-
-              // Now, create a sub-collection under the user's document for medications
-              CollectionReference userMedications =
-                  userDoc.collection('medications');
-
-              // Set the initial data for the user's document
-              await userMedications.add({
-                'type': 'cachet',
-                'name': 'Madragol',
-                'dosages': [
-                  {
-                    'numberOfItems': 3,
-                    'timeOfDay': {'hour': "8", 'minute': "30"},
-                    'timing': 'afterMeal',
-                  }
-                ],
-                'duration': 3,
-                'notificationsEnabled': false,
-              });
-            }
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AddMedicationPage()));
           },
           backgroundColor: Colors.blue.shade800,
           shape: const CircleBorder(),
