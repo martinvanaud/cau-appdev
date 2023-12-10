@@ -44,6 +44,7 @@ dependencies:
   firebase_auth: ^4.14.1
   firebase_database: ^10.1.0
   cloud_firestore: ^4.13.2
+  modal_progress_hud_nsn: ^0.4.0
 
 dev_dependencies:
   flutter_test:
@@ -78,6 +79,7 @@ flutter:
     - assets/medication/cachet.png
     - assets/medication/pill.png
     - assets/medication/respirator.png
+    - assets/profile_default.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
