@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'addPersonalInformation.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
 import '../main.dart';
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({Key? key});
+  const RegisterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +27,14 @@ class RegisterPage extends StatelessWidget {
 }
 
 class RegisterForm extends StatefulWidget {
-  const RegisterForm({Key? key});
+  const RegisterForm({super.key});
 
   @override
   State<RegisterForm> createState() => _RegisterFormState();
 }
 
 class _RegisterFormState extends State<RegisterForm> {
+  bool saving = false;
   final _authentication = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
@@ -42,11 +44,11 @@ class _RegisterFormState extends State<RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return ModalProgressHUD(
+      inAsyncCall: saving,
       child: Padding(
         padding: const EdgeInsets.all(30.0),
         child: Form(
-          autovalidateMode: AutovalidateMode.onUserInteraction,
           key: _formKey,
           child: ListView(
             children: [
@@ -126,30 +128,61 @@ class _RegisterFormState extends State<RegisterForm> {
               const SizedBox(
                 height: 30,
               ),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F4FF),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: TextFormField(
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm password',
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: Color(0xFF1F41BB),
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    password = value;
+                  },
+                  validator: (value) {
+                    if (value != password) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
               ElevatedButton(
                 onPressed: () async {
-                  try {
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      saving = true;
+                    });
                     final newUser =
                         await _authentication.createUserWithEmailAndPassword(
-                      email: email,
-                      password: password,
-                    );
-
+                            email: email, password: password);
+                    await _addUserDataToFirestore(newUser.user!.uid);
+                    await _authentication.signInWithEmailAndPassword(
+                        email: email, password: password);
                     if (newUser != null) {
-                      // After successful registration, add user data to Firestore
-                      await _addUserDataToFirestore(newUser.user!.uid);
-
                       _formKey.currentState!.reset();
                     }
-                  } catch (e) {
-                    // Handle registration errors
-                    print('Error during registration: $e');
+                    if (!mounted) return;
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const addPersonalInformationPage()));
+                    setState(() {
+                      saving = false;
+                    });
                   }
-                  if (!mounted) return;
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const addPersonalInformationPage()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1F41BB),
