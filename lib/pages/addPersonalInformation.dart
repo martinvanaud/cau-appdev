@@ -44,12 +44,29 @@ class _addPersonalInformationFormState extends State<addPersonalInformationForm>
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(30.0),
       child: Form(
         autovalidateMode: AutovalidateMode.onUserInteraction,
         key: _form_key,
         child: ListView(
             children: [
+              const Text(
+                "Complete your profile",
+                style: TextStyle(
+                  fontSize: 18.0,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Text(
+                "for a more accurate experience",
+                style: TextStyle(
+                  fontSize: 18.0,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(
+                height: 60,
+              ),
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F4FF),
@@ -195,7 +212,7 @@ class _addPersonalInformationFormState extends State<addPersonalInformationForm>
                       ),
                       minimumSize: const Size(double.infinity, 60),
                     ),
-                    child: const Text("Validate", style: TextStyle(color: Colors.black),)
+                    child: const Text("Validate", style: TextStyle(color: Colors.white),)
                 ),
               )
             ],

@@ -73,7 +73,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 textAlign: TextAlign.center,
               ),
               const Text(
-                "MediMinders",
+                "MediMinder",
                 style: TextStyle(
                   fontSize: 18.0,
                 ),
@@ -180,31 +180,12 @@ class _RegisterFormState extends State<RegisterForm> {
                       );
                       User? user = userCredential.user;
                       if (user != null) {
-                        // Update the user's profile with the username and wait for it to complete
-                        await user.updateProfile(displayName: username).then((_) async {
-                          // After updating, reload the user's profile
-                          await user!.reload();
-
-                          // Re-fetch the user to get updated profile
-                          user = FirebaseAuth.instance.currentUser;
-
-                          // Store additional user information in Firestore
-                          await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-                            'username': user!.displayName,
-                            'email': user!.email,
-                            'age': '',
-                            'height': '',
-                            'weight': '',
-                            // Add other fields as needed
-                          });
-
                           _formKey.currentState!.reset();
                           if (!mounted) return;
                           Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const MyHomePage())
+                              MaterialPageRoute(builder: (context) => const addPersonalInformationPage())
                           );
-                        });
                       }
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'weak-password') {
@@ -232,6 +213,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     fontSize: 20.0,
                   ),
                 ),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

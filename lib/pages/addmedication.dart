@@ -161,6 +161,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   timing: _dosageTime!,
                 );
                 Medication medication = Medication(
+                  id: "zrezr", // TODO: put the user id from _auth
                   name: _medicineName,
                   type: _medicationType!,
                   dosages: [dosage],
@@ -356,6 +357,7 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
         child: ElevatedButton(
           onPressed: () {
             Medication finalMedication = Medication(
+              id: "zrezr", // TODO: put the user id from _auth
               type: medication.type,
               name: medication.name,
               dosages: _dosagesList,

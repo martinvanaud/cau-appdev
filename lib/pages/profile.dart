@@ -1,15 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'ChangePasswordPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'package:medi_minder/pages/changepassword.dart';
 
 import 'package:medi_minder/entity/profile.dart';
 
 import 'package:medi_minder/providers/profile.dart';
+
+import 'package:medi_minder/pages/welcome.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -27,24 +24,6 @@ class _ProfilePageState extends State<ProfilePage> {
     getUserProfileFuture = getUserProfileStream();
   }
 
-  Future<void> fetchProfileData() async {
-    DocumentSnapshot profileSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(loggedUser!.uid)
-        .get();
-
-    Map<String, dynamic>? data = profileSnapshot.data() as Map<String, dynamic>?;
-
-    if (data != null) {
-      setState(() {
-        _username = data['username'] ?? '';
-        _age = data['age'] ?? '';
-        _height = data['height'] ?? '';
-        _weight = data['weight'] ?? '';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
           IconButton(
             onPressed: () {
               FirebaseAuth.instance.signOut();
+              Navigator.popUntil(context, (route) => route.isFirst);
             },
             icon: const Icon(Icons.logout),
           ),
@@ -89,7 +69,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 30.0),
                 const CircleAvatar(
                   radius: 50,
-                  backgroundImage: AssetImage(''), // Update this accordingly
+                  backgroundColor: Colors.lightGreen,
+                  // backgroundImage: AssetImage(''), // Update this accordingly
                 ),
                 const SizedBox(height: 30.0),
                 Text(

@@ -26,14 +26,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 height: 300,
               ),
               const Text(
-                'Manage easily',
-                style: TextStyle(
-                  color: Color(0xFF1F41BB),
-                  fontSize: 40.0,
-                ),
-              ),
-              const Text(
-                'your medications',
+                'Manage easily your medication',
                 style: TextStyle(
                   color: Color(0xFF1F41BB),
                   fontSize: 40.0,
@@ -43,13 +36,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 height: 10,
               ),
               const Text(
-                'Explore your calendar with all the medications',
-                style: TextStyle(
-                  fontSize: 16.0,
-                ),
-              ),
-              const Text(
-                'and create your own daily health diary',
+                'Explore your calendar with all the medications and create your own daily health diary',
                 style: TextStyle(
                   fontSize: 16.0,
                 ),

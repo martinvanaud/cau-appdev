@@ -4,6 +4,8 @@ import 'package:medi_minder/pages/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
+import '../main.dart';
+
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -142,6 +144,11 @@ class _LoginFormState extends State<LoginForm> {
 
                       if (currentUser.user != null) {
                         _formKey.currentState!.reset();
+                        if (!mounted) return;
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MyHomePage())
+                        );
                       }
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'invalid-login-credentials') {
