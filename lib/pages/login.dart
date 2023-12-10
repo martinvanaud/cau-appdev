@@ -37,6 +37,15 @@ class _LoginFormState extends State<LoginForm> {
   String email = '';
   String password = '';
 
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -124,27 +133,26 @@ class _LoginFormState extends State<LoginForm> {
                 height: 30,
               ),
               ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
+                  onPressed: () async {
                     try {
-                      setState(() {
-                        saving = true;
-                      });
-                    } catch (e) {
-                      print(e);
-                    }
-                    final currentUser =
-                        await _authentication.signInWithEmailAndPassword(
-                            email: email, password: password);
+                      UserCredential currentUser = await _authentication.signInWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
 
-                    if (currentUser.user != null) {
-                      _formKey.currentState!.reset();
-                      setState(() {
-                        saving = false;
-                      });
+                      if (currentUser.user != null) {
+                        _formKey.currentState!.reset();
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'invalid-login-credentials') {
+                        _showErrorSnackbar('Wrong email/password provided.');
+                      } else {
+                        _showErrorSnackbar('Login failed: ${e.message}');
+                      }
+                    } catch (e) {
+                      _showErrorSnackbar('An unexpected error occurred.');
                     }
-                  }
-                },
+                  },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1F41BB),
                   // Set the background color

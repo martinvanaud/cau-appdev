@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'addPersonalInformation.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
@@ -37,10 +39,21 @@ class _RegisterFormState extends State<RegisterForm> {
   bool saving = false;
   final _authentication = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+
   final _formKey = GlobalKey<FormState>();
+  String username = '';
   String email = '';
   String password = '';
   String confirmPassword = '';
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,31 +172,52 @@ class _RegisterFormState extends State<RegisterForm> {
                 height: 30,
               ),
               ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      saving = true;
-                    });
-                    final newUser =
-                        await _authentication.createUserWithEmailAndPassword(
-                            email: email, password: password);
-                    await _addUserDataToFirestore(newUser.user!.uid);
-                    await _authentication.signInWithEmailAndPassword(
-                        email: email, password: password);
-                    if (newUser != null) {
-                      _formKey.currentState!.reset();
+                  onPressed: () async {
+                    try {
+                      UserCredential userCredential = await _authentication.createUserWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
+                      User? user = userCredential.user;
+                      if (user != null) {
+                        // Update the user's profile with the username and wait for it to complete
+                        await user.updateProfile(displayName: username).then((_) async {
+                          // After updating, reload the user's profile
+                          await user!.reload();
+
+                          // Re-fetch the user to get updated profile
+                          user = FirebaseAuth.instance.currentUser;
+
+                          // Store additional user information in Firestore
+                          await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+                            'username': user!.displayName,
+                            'email': user!.email,
+                            'age': '',
+                            'height': '',
+                            'weight': '',
+                            // Add other fields as needed
+                          });
+
+                          _formKey.currentState!.reset();
+                          if (!mounted) return;
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MyHomePage())
+                          );
+                        });
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'weak-password') {
+                        _showErrorSnackbar('Please provide a stronger password.');
+                      } else if (e.code == 'email-already-in-use') {
+                        _showErrorSnackbar('This user already exists, please login.');
+                      } else {
+                        _showErrorSnackbar('Login failed: ${e.message}');
+                      }
+                    } catch (e) {
+                      _showErrorSnackbar('An unexpected error occurred.');
                     }
-                    if (!mounted) return;
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const addPersonalInformationPage()));
-                    setState(() {
-                      saving = false;
-                    });
-                  }
-                },
+                  },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1F41BB),
                   shape: RoundedRectangleBorder(
@@ -198,7 +232,6 @@ class _RegisterFormState extends State<RegisterForm> {
                     fontSize: 20.0,
                   ),
                 ),
-              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

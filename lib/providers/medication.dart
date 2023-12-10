@@ -1,59 +1,86 @@
-import 'package:flutter/material.dart';
-
-import 'package:medi_minder/enums/dosage.dart';
-import 'package:medi_minder/enums/medication.dart';
-
-import 'package:medi_minder/entity/dosage.dart';
 import 'package:medi_minder/entity/medication.dart';
 
-class MedicationProvider with ChangeNotifier {
-  List<Medication> _medications = [];
+// Firebase
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  MedicationProvider() {
-    initializeMedications();
+class MedicationProvider {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<DocumentReference<Object?>> addUserMedication(String uid, Medication medication) async {
+    // Check if the user exists in Firebase Authentication
+    User? user = _auth.currentUser;
+    if (user != null && user.uid == uid) {
+      // Reference to the user's document in the 'users' collection
+      DocumentReference userDoc = _firestore.collection('users').doc(uid);
+
+      // Reference to the user's 'medications' sub-collection
+      CollectionReference userMedications = userDoc.collection('medications');
+
+      // Add the medication document to Firestore
+      return userMedications.add(medication.toMap());
+    } else {
+      throw Exception('User not found or UID does not match the current user.');
+    }
   }
 
-  List<Medication> get medications => _medications;
+  // Future<List<Medication>> getUserMedications(String uid) async {
+  //   User? user = _auth.currentUser;
+  //   if (user != null && user.uid == uid) {
+  //     QuerySnapshot querySnapshot = await _firestore
+  //         .collection('users')
+  //         .doc(uid)
+  //         .collection('medications')
+  //         .get();
+  //
+  //     List<Medication> medicationList = querySnapshot.docs
+  //         .map((doc) => Medication.fromMap(doc.data() as Map<String, dynamic>, uid))
+  //         .toList();
+  //
+  //     return medicationList;
+  //   } else {
+  //     throw Exception('User not found or UID does not match the current user.');
+  //   }
+  // }
 
-  void initializeMedications() {
-    _medications = [
-      Medication(
-        type: MedicationType.pill,
-        name: 'Aspirin',
-        duration: 7,
-        dosages: [
-          Dosage(numberOfItems: 1, timeOfDay: const TimeOfDay(hour: 8, minute: 00) , timing: DosageTiming.afterMeal),
-        ],
-        notificationsEnabled: true,
-      ),
-      Medication(
-        type: MedicationType.cachet,
-        name: 'Comlivit',
-        duration: 7,
-        dosages: [
-          Dosage(numberOfItems: 1, timeOfDay: const TimeOfDay(hour: 8, minute: 00) , timing: DosageTiming.afterMeal),
-        ],
-        notificationsEnabled: true,
-      ),
-      Medication(
-        type: MedicationType.ampoule,
-        name: '5-HTP',
-        duration: 2,
-        dosages: [
-          Dosage(numberOfItems: 1, timeOfDay: const TimeOfDay(hour: 8, minute: 30) , timing: DosageTiming.whenever),
-        ],
-        notificationsEnabled: true,
-      ),
-    ];
+  Stream<List<Medication>> getUserMedicationsStream(String uid) {
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('medications')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Medication.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .toList());
   }
 
-  void addMedication(Medication medication) {
-    _medications.add(medication);
-    notifyListeners();
+  Future<void> removeUserMedication(String uid, String medicationId) async {
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('medications')
+        .doc(medicationId)
+        .delete();
   }
 
-  void removeMedication(Medication medication) {
-    _medications.remove(medication);
-    notifyListeners();
-  }
+  // Future<Medication> getUserMedicationById(String uid, String medicationId) async {
+  //   User? user = _auth.currentUser;
+  //   if (user != null && user.uid == uid) {
+  //     DocumentSnapshot documentSnapshot = await _firestore
+  //         .collection('users')
+  //         .doc(uid)
+  //         .collection('medications')
+  //         .doc(medicationId)
+  //         .get();
+  //
+  //     if (documentSnapshot.exists) {
+  //       return Medication.fromMap(documentSnapshot.data() as Map<String, dynamic>);
+  //     } else {
+  //       throw Exception('Medication not found.');
+  //     }
+  //   } else {
+  //     throw Exception('User not found or UID does not match the current user.');
+  //   }
+  // }
 }

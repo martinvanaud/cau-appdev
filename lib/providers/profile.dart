@@ -12,6 +12,7 @@ Future<void> updateProfile(String field, String value) async {
       });
     } catch (e) {
       print('Error updating profile: $e');
+      // Handle errors, e.g., show a snackbar with the error message
     }
   }
 }
