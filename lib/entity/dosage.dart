@@ -3,7 +3,7 @@ import 'package:medi_minder/enums/dosage.dart';
 
 class Dosage {
   final int numberOfItems;
-  final TimeOfDay timeOfDay;
+  late final TimeOfDay timeOfDay;
   final DosageTiming timing;
 
   Dosage({
@@ -11,6 +11,10 @@ class Dosage {
     required this.timeOfDay,
     required this.timing,
   });
+
+  Dosage copyWithUpdatedTime(TimeOfDay newTime) {
+    return Dosage(numberOfItems: numberOfItems, timeOfDay: newTime, timing: timing);
+  }
 
   Map<String, dynamic> toMap() {
     return {

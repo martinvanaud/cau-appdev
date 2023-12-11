@@ -411,47 +411,48 @@ class _AddMedicationSchedulePageState extends State<AddMedicationSchedulePage> {
             ),
             Container(
               constraints: const BoxConstraints(maxHeight: 200),
-              child: Expanded(
-                child: ListView.builder(
-                  itemCount: _dosagesList.length,
-                  itemBuilder: (c, i) {
-                    return Dismissible(
-                      key: ValueKey(_dosagesList[i]),
-                      child: ListTile(
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Dose ${i + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                textStyle: const TextStyle(fontSize: 20),
-                              ),
-                              onPressed: () {
-                                showTimePicker(
-                                  context: context,
-                                  initialTime: _dosagesList[i].timeOfDay,
-                                  initialEntryMode: TimePickerEntryMode.dial,
-                                ).then((time) {
-                                  if (time != null) {
-                                    setState(() {
-                                      _timeOfDay = time;
-                                    });
-                                  }
-                                });
-                              },
-                              child: Text('${_timeOfDay.hour.toString().padLeft(2, '0')}:${_timeOfDay.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: ListView.builder(
+                itemCount: _dosagesList.length,
+                itemBuilder: (c, i) {
+                  return Dismissible(
+                    key: ValueKey(_dosagesList[i]),
+                    child: ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Dose ${i + 1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              textStyle: const TextStyle(fontSize: 20),
                             ),
-                          ],
-                        ),
+                            onPressed: () {
+                              showTimePicker(
+                                context: context,
+                                initialTime: _dosagesList[i].timeOfDay,
+                                initialEntryMode: TimePickerEntryMode.dial,
+                              ).then((time) {
+                                if (time != null) {
+                                  setState(() {
+                                    _dosagesList[i] = _dosagesList[i].copyWithUpdatedTime(time);
+                                  });
+                                }
+                              });
+                            },
+                            child: Text(
+                                '${_dosagesList[i].timeOfDay.hour.toString().padLeft(2, '0')}:${_dosagesList[i].timeOfDay.minute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold)
+                            ),
+                          ),
+                        ],
                       ),
-                      onDismissed: (direction) {
-                        setState(() {
-                          _dosagesList.removeAt(i);
-                        });
-                      },
-                    );
-                  },
-                ),
+                    ),
+                    onDismissed: (direction) {
+                      setState(() {
+                        _dosagesList.removeAt(i);
+                      });
+                    },
+                  );
+                },
               ),
             ),
             IconButton(
